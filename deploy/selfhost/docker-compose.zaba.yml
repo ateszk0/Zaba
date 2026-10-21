@@ -1,0 +1,53 @@
+# Zaba's additions to the official Supabase self-hosting stack. It is layered on
+# top of the official docker-compose.yml through COMPOSE_FILE (see install.sh).
+
+services:
+  # The gateway is reachable on this machine only (Studio is behind it, so it
+  # must never be public). Everything public goes through Caddy.
+  api-gw:
+    ports: !override
+      - "127.0.0.1:8000:8000/tcp"
+
+  # The connection pooler publishes Postgres ports by default; nothing outside
+  # the Docker network needs them.
+  supavisor:
+    ports: !reset []
+
+  # Serves the web builds and the allow-listed API paths. TLS ends at
+  # Cloudflare, so Caddy speaks plain HTTP inside the Docker network.
+  caddy:
+    container_name: zaba-caddy
+    image: caddy:2.11.7
+    restart: unless-stopped
+    depends_on:
+      api-gw:
+        condition: service_healthy
+    environment:
+      ZABA_APP_HOST: ${ZABA_APP_HOST}
+      ZABA_API_HOST: ${ZABA_API_HOST}
+      ZABA_ADMIN_HOST: ${ZABA_ADMIN_HOST}
+    ports:
+      - "${ZABA_HTTP_BIND:-127.0.0.1}:${ZABA_HTTP_PORT:-8080}:80/tcp"
+    volumes:
+      - ./zaba/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./zaba/web/app:/srv/app:ro
+      - ./zaba/web/admin:/srv/admin:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+  # Outbound-only tunnel to Cloudflare: the server needs no open inbound port.
+  # Started with `docker compose --profile tunnel up -d` once the token is set.
+  cloudflared:
+    profiles: ["tunnel"]
+    container_name: zaba-cloudflared
+    image: cloudflare/cloudflared:2026.10.2
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:-}
+    depends_on:
+      - caddy
+
+volumes:
+  caddy-data:
+  caddy-config:

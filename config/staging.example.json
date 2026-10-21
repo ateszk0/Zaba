@@ -1,0 +1,7 @@
+{
+  "APP_ENV": "staging",
+  "SUPABASE_URL": "https://api-staging.your-domain.example",
+  "SUPABASE_ANON_KEY": "the public anon JWT printed by deploy/selfhost/install.sh (not the sb_publishable_ key: the self-hosted Realtime needs the JWT)",
+  "DEMO_EMAIL": "email of the demo account (created by tool/create_demo_user.py)",
+  "DEMO_PASSWORD": "its password: shipped inside the app, so use a throw-away one"
+}
