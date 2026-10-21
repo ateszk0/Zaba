@@ -54,7 +54,8 @@ class _AdminOrderDetailState extends ConsumerState<AdminOrderDetail> {
       );
     } on StaffOnlyException {
       messenger.showSnackBar(SnackBar(content: Text(l10n.adminNoAccessTitle)));
-    } on Exception {
+    } catch (_) {
+      // The network or the server, or an answer the page cannot read.
       messenger.showSnackBar(SnackBar(content: Text(l10n.adminActionFailed)));
     } finally {
       if (mounted) {

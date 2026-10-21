@@ -13,7 +13,6 @@ import '../../orders/application/order_providers.dart';
 import '../../orders/domain/order.dart';
 import '../../orders/domain/order_status.dart';
 import '../application/payment_providers.dart';
-import '../domain/payment_service.dart';
 import '../domain/card_outcome.dart';
 import '../domain/card_validation.dart';
 import 'card_input_formatters.dart';
@@ -70,7 +69,9 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
       status = await ref
           .read(paymentServiceProvider)
           .submit(orderId: widget.orderId, outcome: outcome);
-    } on PaymentUnavailableException {
+    } catch (_) {
+      // A PaymentUnavailableException, or anything else going wrong on the way
+      // (an answer the app cannot read): the form must not stay locked.
       if (!mounted) return;
       setState(() {
         _processing = false;
@@ -96,7 +97,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
       await ref
           .read(paymentServiceProvider)
           .submit(orderId: widget.orderId, outcome: CardOutcome.cancelled);
-    } on PaymentUnavailableException {
+    } catch (_) {
       // The order simply stays waiting for payment; it can be paid from its
       // page later.
     }

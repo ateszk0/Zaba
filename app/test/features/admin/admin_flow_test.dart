@@ -388,6 +388,24 @@ void main() {
     });
   });
 
+  group('an answer the page cannot read', () {
+    testWidgets('is reported like any other failure', (tester) async {
+      final admin = kitchen()..failNextMove = TypeError();
+      await pumpAdmin(tester, admin: admin, signedInAs: staffAccount.email);
+      await tester.tap(tile('ZB-1001'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Készítés megkezdése'));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(
+        find.text('A művelet nem sikerült. Próbáld újra.'),
+        findsOneWidget,
+      );
+    });
+  });
+
   group('the audit log', () {
     testWidgets('an administrator reads what the staff did', (tester) async {
       final admin = kitchen(role: StaffRole.admin);

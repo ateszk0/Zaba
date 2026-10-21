@@ -83,11 +83,14 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           OrderRejection.outOfDeliveryArea => l10n.orderErrorOutOfArea,
           OrderRejection.belowMinimumOrder => l10n.orderErrorBelowMinimum,
           OrderRejection.slotUnavailable => l10n.orderErrorSlotUnavailable,
+          OrderRejection.tooManyUnpaidOrders => l10n.orderErrorTooManyUnpaid,
         };
       });
-    } on Exception {
-      // The network or the server: nothing was placed (or, if the answer was
-      // lost on the way, the same key returns that order on the next try).
+    } catch (_) {
+      // The network or the server (also an answer the app cannot read, which
+      // is an Error, not an Exception): nothing was placed, or, if the answer
+      // was lost on the way, the same key returns that order on the next try.
+      // Either way the button must not stay spinning.
       if (!mounted) return;
       setState(() {
         _submitting = false;

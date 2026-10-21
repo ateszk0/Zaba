@@ -56,6 +56,7 @@ class SupabaseOrderRepository implements OrderRepository {
     'out_of_delivery_area': OrderRejection.outOfDeliveryArea,
     'below_minimum_order': OrderRejection.belowMinimumOrder,
     'slot_unavailable': OrderRejection.slotUnavailable,
+    'too_many_unpaid_orders': OrderRejection.tooManyUnpaidOrders,
   };
 
   @override

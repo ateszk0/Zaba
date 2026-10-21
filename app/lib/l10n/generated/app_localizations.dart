@@ -514,6 +514,12 @@ abstract class AppLocalizations {
   /// **'Erre a címre nem szállítunk.'**
   String get addressErrorOutOfZone;
 
+  /// No description provided for @addressErrorLookup.
+  ///
+  /// In hu, this message translates to:
+  /// **'Most nem sikerült ellenőrizni az irányítószámot. Próbáld újra.'**
+  String get addressErrorLookup;
+
   /// No description provided for @addressErrorStreet.
   ///
   /// In hu, this message translates to:
@@ -651,6 +657,12 @@ abstract class AppLocalizations {
   /// In hu, this message translates to:
   /// **'Ez az idősáv már nem elérhető, válassz másikat.'**
   String get orderErrorSlotUnavailable;
+
+  /// No description provided for @orderErrorTooManyUnpaid.
+  ///
+  /// In hu, this message translates to:
+  /// **'Már van néhány kifizetetlen rendelésed. Fizesd ki vagy told le őket, mielőtt újat adsz le.'**
+  String get orderErrorTooManyUnpaid;
 
   /// No description provided for @orderErrorGeneric.
   ///
@@ -963,6 +975,18 @@ abstract class AppLocalizations {
   /// In hu, this message translates to:
   /// **'Mégsem'**
   String get orderCancelKeep;
+
+  /// No description provided for @orderCancelTooLate.
+  ///
+  /// In hu, this message translates to:
+  /// **'A rendelést már nem lehet lemondani: a konyha elkezdte készíteni.'**
+  String get orderCancelTooLate;
+
+  /// No description provided for @orderCancelFailed.
+  ///
+  /// In hu, this message translates to:
+  /// **'A lemondás nem sikerült. Próbáld meg újra.'**
+  String get orderCancelFailed;
 
   /// No description provided for @orderSummarySection.
   ///

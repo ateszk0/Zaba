@@ -54,8 +54,9 @@ class SupabasePaymentService implements PaymentService {
       throw PaymentUnavailableException(error);
     } on PostgrestException catch (error) {
       throw PaymentUnavailableException(error);
-    } on Exception catch (error) {
-      // The network: a socket, a timeout, a browser fetch error.
+    } catch (error) {
+      // The network (a socket, a timeout, a browser fetch error), or an answer
+      // the app cannot read: either way the payment did not go through here.
       throw PaymentUnavailableException(error);
     }
   }

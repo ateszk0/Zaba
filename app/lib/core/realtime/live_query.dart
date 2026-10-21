@@ -99,6 +99,11 @@ Stream<T> liveQuery<T>({
       stopFeed = feed(
         onChange: refresh,
         onStatus: (isLive) {
+          if (closed) {
+            // A status that arrives while the channel is being removed must not
+            // start a timer nobody will cancel.
+            return;
+          }
           live = isLive;
           if (isLive) {
             // Catch up on whatever happened before the subscription was up,

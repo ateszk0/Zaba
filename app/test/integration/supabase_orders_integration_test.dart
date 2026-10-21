@@ -136,6 +136,24 @@ void main() {
       },
     );
 
+    test('a customer cannot hold more than five unpaid orders, and cancelling one frees the limit', () async {
+      final first = await orders.placeOrder(request());
+      for (var i = 0; i < maxUnpaidOrders - 1; i++) {
+        await orders.placeOrder(request());
+      }
+
+      await expectLater(
+        orders.placeOrder(request()),
+        rejectedWith(OrderRejection.tooManyUnpaidOrders),
+      );
+
+      await orders.cancelOrder(first.id);
+      expect(
+        (await orders.placeOrder(request())).status,
+        OrderStatus.pendingPayment,
+      );
+    });
+
     test('an order is only visible to the customer who placed it', () async {
       final mine = await orders.placeOrder(request());
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:zaba/core/money/money.dart';
+import 'package:zaba/features/auth/data/in_memory_auth_repository.dart';
 
 import '../../support/pump_zaba.dart';
 
@@ -209,6 +210,24 @@ void main() {
       await tester.tap(navTab('Rendeléseim'));
       await tester.pumpAndSettle();
       expect(find.text('Lépj be a rendeléseidhez'), findsOneWidget);
+    });
+
+    testWidgets('an account with neither a name nor an address still shows', (
+      tester,
+    ) async {
+      await pumpZaba(
+        tester,
+        auth: InMemoryAuthRepository(
+          accounts: [(email: '', password: 'x', fullName: null)],
+          signedInAs: '',
+        ),
+      );
+      await tester.tap(navTab('Profil'));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('?'), findsOneWidget);
+      expect(find.text('Kijelentkezés'), findsOneWidget);
     });
   });
 }

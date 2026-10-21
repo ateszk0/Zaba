@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'admin_app.dart';
 import 'core/config/app_config.dart';
+import 'core/storage/preferences.dart';
 import 'core/supabase/supabase_bootstrap.dart';
 import 'features/admin/application/admin_providers.dart';
 import 'features/admin/data/supabase_admin_repository.dart';
@@ -18,7 +19,9 @@ Future<void> main() async {
     runApp(const _MissingBackend());
     return;
   }
-  final client = await initSupabase();
+  final client = await initSupabase(
+    persistSession: await openPreferences() != null,
+  );
   runApp(
     ProviderScope(
       overrides: [

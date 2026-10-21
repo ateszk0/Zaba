@@ -55,10 +55,15 @@ class _AddressDialogState extends ConsumerState<_AddressDialog> {
     if (postalCode.length != 4) {
       postalCodeError = l10n.addressErrorPostalCode;
     } else {
-      final zone = await ref
-          .read(deliveryZoneRepositoryProvider)
-          .zoneForPostalCode(postalCode);
-      if (zone == null) postalCodeError = l10n.addressErrorOutOfZone;
+      try {
+        final zone = await ref
+            .read(deliveryZoneRepositoryProvider)
+            .zoneForPostalCode(postalCode);
+        if (zone == null) postalCodeError = l10n.addressErrorOutOfZone;
+      } catch (_) {
+        // The zones could not be loaded (no network): say so, do not stay silent.
+        postalCodeError = l10n.addressErrorLookup;
+      }
     }
     final streetError = street.isEmpty ? l10n.addressErrorStreet : null;
 

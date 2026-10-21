@@ -31,8 +31,9 @@ class FakeAdminRepository implements AdminRepository {
   /// The role of whoever asks; null means "not staff".
   StaffRole? role;
 
-  /// What `setStatus` throws instead of working, once.
-  Exception? failNextMove;
+  /// What `setStatus` throws instead of working, once (an `Exception`, or an
+  /// `Error` for an answer the page cannot read).
+  Object? failNextMove;
 
   final List<Order> _orders;
   final _history = <String, List<StatusChange>>{};

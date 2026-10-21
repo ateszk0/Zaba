@@ -12,6 +12,7 @@ import '../../cart/presentation/widgets/price_summary.dart';
 import '../../delivery/presentation/address_dialog.dart';
 import '../application/order_providers.dart';
 import '../domain/order.dart';
+import '../domain/order_repository.dart';
 import '../domain/order_status.dart';
 import 'order_labels.dart';
 
@@ -94,6 +95,7 @@ class OrderTrackingScreen extends ConsumerWidget {
     Order order,
   ) async {
     final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -115,8 +117,17 @@ class OrderTrackingScreen extends ConsumerWidget {
         ],
       ),
     );
-    if (confirmed == true) {
+    if (confirmed != true) {
+      return;
+    }
+    try {
       await ref.read(orderRepositoryProvider).cancelOrder(order.id);
+    } on OrderNotCancellableException {
+      // The kitchen started between the tap and the answer: say why nothing
+      // happened (the screen shows the new state by itself).
+      messenger.showSnackBar(SnackBar(content: Text(l10n.orderCancelTooLate)));
+    } catch (_) {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.orderCancelFailed)));
     }
   }
 }

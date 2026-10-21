@@ -1,10 +1,10 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
 import 'core/config/app_config.dart';
+import 'core/storage/preferences.dart';
 import 'core/supabase/supabase_bootstrap.dart';
 import 'features/auth/application/auth_providers.dart';
 import 'features/auth/data/supabase_auth_repository.dart';
@@ -24,14 +24,15 @@ import 'features/payment/data/supabase_payment_service.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final preferences = await SharedPreferences.getInstance();
+  final preferences = await openPreferences();
   final overrides = <Override>[
-    cartStoreProvider.overrideWithValue(
-      SharedPreferencesCartStore(preferences),
-    ),
+    if (preferences != null)
+      cartStoreProvider.overrideWithValue(
+        SharedPreferencesCartStore(preferences),
+      ),
   ];
   if (AppConfig.hasBackend) {
-    final client = await initSupabase();
+    final client = await initSupabase(persistSession: preferences != null);
     overrides.addAll([
       authRepositoryProvider.overrideWith(
         (ref) => SupabaseAuthRepository(client.auth),

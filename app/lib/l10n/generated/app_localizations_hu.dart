@@ -240,6 +240,10 @@ class AppLocalizationsHu extends AppLocalizations {
   String get addressErrorOutOfZone => 'Erre a címre nem szállítunk.';
 
   @override
+  String get addressErrorLookup =>
+      'Most nem sikerült ellenőrizni az irányítószámot. Próbáld újra.';
+
+  @override
   String get addressErrorStreet => 'Add meg az utcát és a házszámot.';
 
   @override
@@ -328,6 +332,10 @@ class AppLocalizationsHu extends AppLocalizations {
   @override
   String get orderErrorSlotUnavailable =>
       'Ez az idősáv már nem elérhető, válassz másikat.';
+
+  @override
+  String get orderErrorTooManyUnpaid =>
+      'Már van néhány kifizetetlen rendelésed. Fizesd ki vagy told le őket, mielőtt újat adsz le.';
 
   @override
   String get orderErrorGeneric =>
@@ -505,6 +513,13 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get orderCancelKeep => 'Mégsem';
+
+  @override
+  String get orderCancelTooLate =>
+      'A rendelést már nem lehet lemondani: a konyha elkezdte készíteni.';
+
+  @override
+  String get orderCancelFailed => 'A lemondás nem sikerült. Próbáld meg újra.';
 
   @override
   String get orderSummarySection => 'Rendelés összegzése';
