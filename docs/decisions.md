@@ -198,14 +198,39 @@ A teljes folyamat és a sorozatdiagram: [`payment-flow.md`](payment-flow.md).
 
 **Méret (g után, `flutter build web --release`):** az admin `main.dart.js` 3,2 MB nyers, 0,94 MB gzip -9; a vásárlói app 3,4 MB, 1,03 MB.
 
+## Demó környezet és Android (h lépés)
+
+A teljes eljárás: [`demo-environment.md`](demo-environment.md).
+
+| Téma | Döntés | Miért |
+|---|---|---|
+| Hosting | Cloudflare **Workers Static Assets** (Pages helyett), három külön oldal: app, admin, APK. Egy kis `wrangler.*.jsonc` írja le, a `_headers` ugyanúgy működik | A Cloudflare dokumentációja szerint a Pages tovább működik, de új projekthez a Workers az ajánlott, és az újdonságok oda érkeznek. A statikus kérés ingyenes és korlátlan; 20 000 fájl és 25 MiB fájlonként (a build 93 fájl, legnagyobb 7,3 MB) |
+| Deploy | Kézzel (`deploy/demo/deploy-web.sh`) vagy kézzel indítható GitHub workflow; nem minden pushra | A megrendelőnek adott link akkor változzon, amikor valaki úgy dönt |
+| Renderer | CanvasKit (dart2js). A `--wasm` build a flutter.dev dokumentációja szerint **iOS-en egyetlen böngészőben sem fut** (a WebKit WasmGC-hibája), így iPhone-on nem hozna semmit | A demó célközönsége iPhone-t is használ |
+| Motor forrása | `--no-web-resources-cdn`: a CanvasKit a saját oldalról jön, nem a Google CDN-jéről. Böngészőben mérve a teljes vásárlási út (belépés, rendelés, fizetés, élő követés) csak két gazdát ér el: az oldalét és a Supabase-ét | Adatvédelem (nincs harmadik fél felé kérés), megbízhatóság, és ez teszi lehetővé a szigorú CSP-t |
+| Fejlécek | Szigorú Content-Security-Policy (csak saját oldal és a Supabase címe, `'wasm-unsafe-eval'` a CanvasKitnek, nincs inline szkript és `unsafe-eval`), `nosniff`, `frame-ancestors 'none'`, `noindex`, az indítófájlok `no-cache`. A `--csp` build kapcsoló miatt nincs generált kód | A CSP-t a `wrangler dev` (ugyanaz a `workerd`, mint a Cloudflare-en) és egy böngésző ellenőrizte: nincs sérülés, a teljes folyamat működik |
+| Betöltőképernyő | `splash.css` és `splash.js` (külső fájl, nem inline), az első Flutter-képkockánál eltűnik | A CSP tiltja az inline szkriptet |
+| Tartalék betű | A CSP a külső betöltést tiltja, ezért a bundle-ölt Baloo 2 és Inter latin és latin-kiterjesztett készletén kívüli karakter (emoji, cirill) doboz (□) | Elfogadott: az étlap és a felület ilyet nem használ; a vásárló megjegyzésében előfordulhat |
+| Függvények a felhőben | A platform JWT-ellenőrzése függvényenként: `payments-create` igen; a webhook és a kártyalépés nem (maguk hitelesítenek: aláírás, aláírt munkamenet). A kulcsokat az új `SUPABASE_PUBLISHABLE_KEYS` / `SUPABASE_SECRET_KEYS` szótárból veszik, a régi változó a tartalék | Az ellenőrzés csak a régi kulcsokat érti (a publishable és secret kulcsot `Invalid JWT`-vel elutasítja), a szolgáltató pedig nem küld Supabase tokent. A régi kulcsokat a Supabase 2026 végéig kivezeti |
+| Jogok új projekten | A `service_role` jogai kifejezettek (`20261021120000_service_role_grants.sql`) | A Supabase az új projekteknél (2026. május 30-tól, a régieknél október 30-tól) nem ad alapból jogot az új public táblákra, a `service_role`-nak sem |
+| Életben tartás | `keepalive.yml`: naponta egy lekérdezés; csak a `DEMO_SUPABASE_URL` beállítása után fut | A Free projekt egy hét után szünetel. A GitHub a 60 napos kikapcsolást a dokumentációja szerint csak publikus repóra mondja; ez privát |
+| Cloudflare eszköz | `wrangler` 4.149.0, a gyökér `package.json`-ban rögzítve, a legfrissebb olyan kiadás, ami már nem húzza be a sebezhető `sharp`-ot (a 4.148.0 és a korábbiak: `npm audit` három magas találat; most 0) | Az eszköz csak telepít és helyben statikus fájlt szolgál ki, de az átadott repó ne hozzon audit-hibát |
+| APK | Csak `arm64-v8a` (23,5 MB), a repón kívüli kulccsal aláírva (`tool/android/create_demo_keystore.sh`); a `build-apk.sh` visszautasítja a debug kulccsal aláírt, az INTERNET jogosultság nélküli vagy 25 MiB feletti APK-t. A letöltő oldal külön oldal, így a web telepítések sosem érintik | 32 bittel együtt ~40 MB lenne, a Cloudflare 25 MiB fölött nem szolgál ki. Az `applicationId` helyőrző |
+| Ikonok | Helyőrző: zöld korong fehér „Z”-vel (`tool/brand/make_placeholder_icons.py`) webre, iOS-re és Androidra; a végleges logó a k lépésben | A logó a legvégén készül |
+
+**Amit a tesztelés megtalált:**
+
+- **A release APK nem indult el** (a debug működött): az első képernyőn ragadt, `NoSuchMethodError ... SharedPreferencesApiRegistrar.getAll`. A `shared_preferences_android` 2.5 jnigen-nel készült, a Kotlin osztályait név szerint hívja JNI-n át, az R8 pedig átnevezi a típusokat (a `Continuation` lett `a5`) és kidobja a Kotlin futtatókörnyezet osztályait. Emulátoron futtatva derült ki; a `proguard-rules.pro` megtartja a Kotlin futtatókörnyezetet és a plugin csomagját. Utána a belépés, a kosár és az újraindítás utáni munkamenet is működik. (A `jni` és a `shared_preferences_android` az egyetlen jni-s csomag a függőségek között.)
+- A főmanifestből **hiányzott az INTERNET jogosultság** (a Flutter sablonja csak a debug és profile manifestben deklarálja): egy release APK-nak nem lett volna hálózata. A `build-apk.sh` ezt most ellenőrzi.
+- A `npm audit` a `wrangler` 4.148.0-nál a `sharp`-on keresztül három magas találatot jelzett; 4.149.0-ra váltva nulla.
+
+**Ismert korlátok:** a felhős Supabase-en és a Cloudflare-en még nem futott semmi (a te fiókjaid kellenek); valódi telefonon (iPhone Safari, Android Chrome, az Android app) nem próbáltam; az iOS biztonságos terület és billentyűzet az i lépés.
+
 ## Nyitott ellenőrzések
 
-- **(h) CanvasKit forrása.** Az alapértelmezett web build a CanvasKitet a Google CDN-jéről
-  (`gstatic.com/flutter-canvaskit/<engine>/`) tölti, nem a saját tárhelyről, és hiányzó glifekhez a
-  `fonts.gstatic.com`-ról tölthet tartalék betűt. Mérés alapján eldöntendő: `--no-web-resources-cdn` (saját
-  tárhelyről) használata. Emojit ezért nem használunk a felületen.
-- **(h) Renderer.** CanvasKit (dart2js) a döntés; a `--wasm` próba sikerült (dry run), de iPhone-on nem hoz
-  előnyt. A flutter.dev hivatalos dokumentációja alapján újraellenőrzendő.
-- **(h/i) iOS Safari.** Biztonságos terület (notch, alsó sáv) kezelése a Flutter webben, billentyűzet viselkedése a
-  checkout űrlapon és a keresésen, kezdőképernyős (standalone) mód.
+- **(i) iOS Safari.** Biztonságos terület (notch, alsó sáv) kezelése a Flutter webben, billentyűzet viselkedése a
+  checkout űrlapon és a keresésen, kezdőképernyős (standalone) mód. A `viewport-fit=cover`, a splash és a manifest
+  megvan, a viselkedés valódi telefonon ellenőrizendő.
 - **(b+) Realtime a Cloudflare Tunnelen.** A WebSocket átmegy-e, nem igazolt; tartalék az 5 mp-es polling.
+- **(h) A felhős demó.** A `setup-supabase.sh`, a `deploy-web.sh` és a két workflow a te fiókjaiddal próbálható ki; az első telepítés után a
+  `tool/check_demo.py` mutatja meg, mi hiányzik.

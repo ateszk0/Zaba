@@ -32,9 +32,17 @@ jobs:
       - run: dart format --output=none --set-exit-if-changed .
       - run: flutter analyze
       - run: flutter test
-      - run: flutter build web --release --dart-define=APP_ENV=dev
-      # The admin page is a separate build of the same project.
-      - run: flutter build web --release -t lib/main_admin.dart --dart-define=APP_ENV=dev --output build/admin
+      # The two web apps, built the way the demo environment builds them (the
+      # rendering engine from our own host, no generated code, the security headers).
+      - name: Build the demo web apps
+        working-directory: .
+        run: |
+          printf '{"APP_ENV":"demo","SUPABASE_URL":"https://ci.example.supabase.co","SUPABASE_ANON_KEY":"ci-placeholder"}' > "$RUNNER_TEMP/ci-config.json"
+          deploy/demo/build-web.sh app "$RUNNER_TEMP/ci-config.json"
+          deploy/demo/build-web.sh admin "$RUNNER_TEMP/ci-config.json"
+          grep -q "connect-src 'self' https://ci.example.supabase.co wss://ci.example.supabase.co" app/build/demo/app/_headers
+          test -f app/build/demo/app/canvaskit/canvaskit.wasm
+          grep -q "Zaba admin" app/build/demo/admin/manifest.json
 
   database:
     name: Database (migrations, pgTAP tests, API smoke test)
@@ -108,7 +116,9 @@ jobs:
     steps:
       - uses: actions/checkout@v7.0.1
 
-      - run: shellcheck -x -S warning deploy/selfhost/*.sh
+      - run: shellcheck -x -S warning deploy/selfhost/*.sh deploy/demo/*.sh tool/android/*.sh
+      - name: Python scripts compile
+        run: python3 -m py_compile tool/*.py tool/brand/*.py supabase/tests/*.py
 
       # The same image and version the server runs.
       - name: Validate the Caddyfile

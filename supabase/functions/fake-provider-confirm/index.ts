@@ -23,7 +23,7 @@ Deno.serve(async (req: Request) => {
   if (req.method !== 'POST') {
     return json({ error: 'method_not_allowed' }, 405);
   }
-  const env = readEnv('fake-provider-confirm', ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'FAKE_PAYMENT_WEBHOOK_SECRET']);
+  const env = readEnv('fake-provider-confirm', ['SUPABASE_URL', 'FAKE_PAYMENT_WEBHOOK_SECRET']);
   if (!env) {
     return json({ error: 'not_configured' }, 500);
   }
@@ -55,12 +55,10 @@ Deno.serve(async (req: Request) => {
   const { body, signatureHeader } = await provider.signEvent(session, outcome);
   const delivery = await fetch(`${env.SUPABASE_URL}/functions/v1/payments-webhook`, {
     method: 'POST',
+    // No Supabase credentials: the webhook takes no platform token (a real
+    // provider has none to send); the signature is its credential.
     headers: {
       'Content-Type': 'application/json',
-      // The platform's own gate in front of every function; the webhook proves
-      // the sender by the signature below.
-      apikey: env.SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${env.SUPABASE_ANON_KEY}`,
       'x-zaba-signature': signatureHeader,
     },
     body,

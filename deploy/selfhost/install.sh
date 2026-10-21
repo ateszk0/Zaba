@@ -137,16 +137,22 @@ sh run.sh start
 # Picks up a changed Caddyfile (its admin endpoint is off, so no live reload)
 # and changed function code.
 docker compose restart caddy functions >/dev/null
-# The gateway health-checks the functions every 5 seconds and needs two good
-# answers before it sends traffic to a restarted container, so for a short while
-# it answers 503. Wait until a function answers (the empty request is refused
-# by the function itself, which is the right answer).
-for _ in $(seq 1 30); do
+# The gateway health-checks the functions every 5 seconds: two good answers make
+# a restarted container healthy, three bad ones make it unhealthy. While it
+# catches up the gateway answers 503, and it can even let a request through
+# first and turn back to 503 a few seconds later. So one good answer proves
+# nothing: wait for a run of them that is longer than the three missed checks
+# (8 x 2 s). The empty request is refused by the function itself, which is the
+# right answer.
+good=0
+for _ in $(seq 1 45); do
   code="$(curl -s -o /dev/null -m 5 -w '%{http_code}' -X POST \
     "http://127.0.0.1:${API_GW_HTTP_PORT:-8000}/functions/v1/payments-webhook" || true)"
-  case "$code" in 000|503) sleep 2 ;; *) break ;; esac
+  case "$code" in 000|503) good=0 ;; *) good=$((good + 1)) ;; esac
+  [ "$good" -ge 8 ] && break
+  sleep 2
 done
-case "$code" in 000|503) echo "WARNING: the payment functions do not answer yet (HTTP $code). Check: sh run.sh logs functions" ;; esac
+[ "$good" -ge 8 ] || echo "WARNING: the payment functions do not answer steadily yet (HTTP $code). Check: sh run.sh logs functions"
 if [ -n "${CLOUDFLARE_TUNNEL_TOKEN:-}" ]; then
   docker compose --profile tunnel up -d --wait
   tunnel="running"

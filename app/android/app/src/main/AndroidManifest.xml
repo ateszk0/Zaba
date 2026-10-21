@@ -1,6 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- The app talks to its backend. Flutter's template only declares this in the
+         debug and profile manifests, so a release build without it has no network. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="zaba"
+        android:label="Zaba"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

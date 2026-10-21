@@ -60,7 +60,7 @@ API, PUBLISHABLE, ANON, SECRET = load_config()
 
 
 def call(method, path, key, token=None, body=None, raw=None, headers=None):
-    all_headers = {"apikey": key, "Content-Type": "application/json", **(headers or {})}
+    all_headers = {**({"apikey": key} if key else {}), "Content-Type": "application/json", **(headers or {})}
     if token:
         all_headers["Authorization"] = f"Bearer {token}"
     data = raw.encode() if raw is not None else (json.dumps(body).encode() if body is not None else None)
@@ -104,7 +104,8 @@ def create_payment(token, order_id):
 
 
 def confirm(token, session_token, outcome):
-    return call("POST", "/functions/v1/fake-provider-confirm", PUBLISHABLE, token,
+    # `token` None sends no Supabase credentials: the signed session is the credential.
+    return call("POST", "/functions/v1/fake-provider-confirm", PUBLISHABLE if token else None, token,
                 {"session_token": session_token, "outcome": outcome})
 
 
@@ -123,9 +124,11 @@ def signed_event(order_id, payment_id, kind="succeeded", event_id=None, at=None)
     return body, f"t={t},v1={signature}"
 
 
-def deliver(body, header, token=ANON):
+def deliver(body, header, token=None, key=None):
+    """Posts an event to the webhook. By default with no Supabase credentials at
+    all, like a payment provider: the signature is the only credential."""
     headers = {"x-zaba-signature": header} if header else {}
-    return call("POST", "/functions/v1/payments-webhook", ANON, token, raw=body, headers=headers)
+    return call("POST", "/functions/v1/payments-webhook", key, token, raw=body, headers=headers)
 
 
 token = sign_up()
@@ -150,6 +153,13 @@ check("the history names the payment as the actor", status == 200 and history[-1
 
 status, rows = call("GET", f"/rest/v1/payments?order_id=eq.{order}&select=status,provider", PUBLISHABLE, token)
 check("the payment attempt succeeded", status == 200 and rows == [{"status": "succeeded", "provider": "fake"}], rows)
+
+# --- the card step needs only its session --------------------------------------
+order = place_order(token, slot_ids[5])
+status, attempt = create_payment(token, order)
+status, result = confirm(None, attempt["session_token"], "approved")
+check("the card step works with the signed session alone", status == 200 and result == {"accepted": True}, (status, result))
+check("and pays the order", order_state(token, order) == ("received", "succeeded"), order_state(token, order))
 
 # --- a declined card, then a retry ---------------------------------------------
 order = place_order(token, slot_ids[1])
@@ -187,12 +197,12 @@ check("a changed body is refused", status == 400, (status, result))
 old_body, old_header = signed_event(order, pay_id, at=time.time() - 3600)
 status, result = deliver(old_body, old_header)
 check("a stale event is refused", status == 400, (status, result))
-status, result = call("GET", "/functions/v1/payments-webhook", ANON, ANON)
+status, result = call("GET", "/functions/v1/payments-webhook", None)
 check("only POST is accepted", status == 405, (status, result))
 check("none of those changed the order", order_state(token, order) == ("pending_payment", "pending"), order_state(token, order))
 
-status, result = deliver(body, header, token=token)
-check("a signed event is applied", status == 200 and result == {"applied": True}, (status, result))
+status, result = deliver(body, header)
+check("a signed event is applied, with no Supabase credentials sent", status == 200 and result == {"applied": True}, (status, result))
 check("the order is paid", order_state(token, order) == ("received", "succeeded"), order_state(token, order))
 status, result = deliver(body, header)
 check("the same request delivered again is a duplicate", status == 200 and result == {"applied": False, "reason": "duplicate"}, (status, result))
@@ -207,6 +217,9 @@ status, result = create_payment(other, order)
 check("another customer cannot start a payment for the order", status == 404 and result == {"error": "order_not_found"}, (status, result))
 status, result = call("POST", "/functions/v1/payments-create", PUBLISHABLE, ANON, {"order_id": order})
 check("a guest cannot start a payment", status == 401, (status, result))
+unsigned_body, _ = signed_event(order, str(uuid.uuid4()), kind="succeeded")
+status, result = deliver(unsigned_body, None, key=ANON, token=token)
+check("credentials of a customer do not replace the signature", status == 400 and result == {"error": "invalid_webhook"}, (status, result))
 status, result = call("POST", "/functions/v1/payments-create", PUBLISHABLE, None, {"order_id": order})
 check("a request without credentials is refused", status == 401, (status, result))
 status, result = create_payment(token, "not-a-uuid")

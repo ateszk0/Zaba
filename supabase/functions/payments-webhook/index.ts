@@ -8,7 +8,7 @@
 
 import { FakePaymentProvider } from '../_shared/payments/fake_provider.ts';
 import { WebhookVerificationError } from '../_shared/payments/provider.ts';
-import { json, readEnv, restHeaders } from '../_shared/http.ts';
+import { apiKey, json, readEnv, restHeaders } from '../_shared/http.ts';
 
 const MAX_BODY_BYTES = 10_000;
 
@@ -16,8 +16,9 @@ Deno.serve(async (req: Request) => {
   if (req.method !== 'POST') {
     return json({ error: 'method_not_allowed' }, 405);
   }
-  const env = readEnv('payments-webhook', ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'FAKE_PAYMENT_WEBHOOK_SECRET']);
-  if (!env) {
+  const env = readEnv('payments-webhook', ['SUPABASE_URL', 'FAKE_PAYMENT_WEBHOOK_SECRET']);
+  const secretKey = apiKey('payments-webhook', 'secret');
+  if (!env || !secretKey) {
     return json({ error: 'not_configured' }, 500);
   }
 
@@ -41,7 +42,7 @@ Deno.serve(async (req: Request) => {
 
   const response = await fetch(`${env.SUPABASE_URL}/rest/v1/rpc/apply_payment_event`, {
     method: 'POST',
-    headers: restHeaders(env.SUPABASE_SERVICE_ROLE_KEY),
+    headers: restHeaders(secretKey),
     body: JSON.stringify({
       p_provider: provider.name,
       p_event_id: event.id,

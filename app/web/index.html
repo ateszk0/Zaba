@@ -5,22 +5,35 @@
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
+  <!-- viewport-fit=cover lets the page use the whole screen on an iPhone with a
+       notch; the app keeps its content out of the unsafe areas itself. -->
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="description" content="Zaba - ételrendelő demó">
   <meta name="theme-color" content="#2F7A3E">
 
-  <!-- iOS: "Add to Home Screen" behaviour. Splash/safe-area handling is finished in step (h). -->
+  <!-- iOS: "Add to Home Screen" opens the app without the browser bars. -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Zaba">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
   <link rel="icon" type="image/png" href="favicon.png"/>
   <link rel="manifest" href="manifest.json">
+  <!-- The loading screen is a plain stylesheet and script, not inline code, so a
+       strict Content-Security-Policy can forbid inline scripts. -->
+  <link rel="stylesheet" href="splash.css">
   <title>Zaba</title>
 </head>
 <body>
+  <div id="splash" role="status" aria-live="polite">
+    <div class="mark" aria-hidden="true">Z</div>
+    <div class="name">Zaba</div>
+    <div class="spinner" aria-hidden="true"></div>
+    <div class="note">Betöltés…</div>
+    <noscript>Az alkalmazás használatához JavaScript szükséges.</noscript>
+  </div>
+  <script src="splash.js" defer></script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

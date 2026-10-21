@@ -4,7 +4,7 @@
 // function only passes the customer's identity on and adds the provider session.
 
 import { FakePaymentProvider } from '../_shared/payments/fake_provider.ts';
-import { json, preflight, readEnv, restHeaders, UUID } from '../_shared/http.ts';
+import { apiKey, json, preflight, readEnv, restHeaders, UUID } from '../_shared/http.ts';
 
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
@@ -13,8 +13,9 @@ Deno.serve(async (req: Request) => {
   if (req.method !== 'POST') {
     return json({ error: 'method_not_allowed' }, 405);
   }
-  const env = readEnv('payments-create', ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'FAKE_PAYMENT_WEBHOOK_SECRET']);
-  if (!env) {
+  const env = readEnv('payments-create', ['SUPABASE_URL', 'FAKE_PAYMENT_WEBHOOK_SECRET']);
+  const publishableKey = apiKey('payments-create', 'publishable');
+  if (!env || !publishableKey) {
     return json({ error: 'not_configured' }, 500);
   }
   const authorization = req.headers.get('authorization');
@@ -35,7 +36,7 @@ Deno.serve(async (req: Request) => {
   // Runs as the customer: the caller's own token, not a privileged key.
   const response = await fetch(`${env.SUPABASE_URL}/rest/v1/rpc/start_payment`, {
     method: 'POST',
-    headers: restHeaders(env.SUPABASE_ANON_KEY, { Authorization: authorization }),
+    headers: restHeaders(publishableKey, { Authorization: authorization }),
     body: JSON.stringify({ p_order_id: orderId }),
   });
   if (!response.ok) {

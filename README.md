@@ -19,8 +19,9 @@ teljes vásárlási úton. Az architektúra úgy épül, hogy az MVP-be **bőví
 | d | Étlap a Supabase-ből (kategóriák, termékek, árak), betöltési és hibaállapotok | kész |
 | e | Kosár a szerver árazásával, kiszállítási zónák és idősávok a Supabase-ből, mentett kosár | kész |
 | f | Rendelés leadása és fake fizetés a szerveren (Edge Function-ök, aláírt webhook), élő rendelés-követés | kész |
-| g | Mini admin (Flutter web: belépés, élő rendeléslista, állapotváltás, audit napló), szimulált értesítések a vásárlónál | kész és tesztelt (lokális Supabase, két böngészőben egyszerre is); jóváhagyásra vár |
-| h–j | Web build + deploy + APK, eszközellenőrzés, átadási csomag | nincs |
+| g | Mini admin (Flutter web: belépés, élő rendeléslista, állapotváltás, audit napló), szimulált értesítések a vásárlónál | kész |
+| h | Demó környezet: Cloudflare (app, admin, APK letöltés) és Supabase Free, szigorú fejlécek, aláírt Android APK, napi életben tartás | kész és helyben tesztelt (emulátoron az APK is); a felhős fiókokon még nem futott: jóváhagyásra vár |
+| i–j | Eszközellenőrzés (telefonok), átadási csomag | nincs |
 | k | Végleges logó | nincs |
 
 ## Helyi indítás
@@ -89,7 +90,7 @@ Az adatmodell: [`docs/data-model.md`](docs/data-model.md).
 ```
 app/        Flutter kliens (mobil + web); lib/core = közös alap, lib/features = funkciók
 supabase/   adatbázis: migrációk, seed adatok, Edge Function-ök (fizetés), tesztek (pgTAP, HTTP)
-deploy/     saját szerveres (staging) telepítés: telepítő, Caddy, Cloudflare Tunnel
+deploy/     selfhost: a saját szerveres staging; demo: a megrendelőnek adható demó (Cloudflare, Supabase, APK)
 config/     környezetenkénti dart-define sablonok (az éles fájlok nincsenek a repóban)
 docs/       döntések és dokumentáció
 tool/       segédscriptek (betűtípus-részhalmaz, termékfotók)
@@ -114,5 +115,6 @@ A titkok sosem kerülnek a repóba: lásd `.env.example`. A kliensbe (web build,
 - [`docs/decisions.md`](docs/decisions.md): technológiai döntések, mérések, nyitott ellenőrzések
 - [`docs/data-model.md`](docs/data-model.md): ER-diagram, a rendelés állapotgépe, ki mit írhat
 - [`docs/payment-flow.md`](docs/payment-flow.md): a fizetés sorozatdiagramja, mi igazi és mi szimulált, éles szolgáltatóra váltás
+- [`docs/demo-environment.md`](docs/demo-environment.md): a megrendelőnek adható demó telepítése (Cloudflare, Supabase Free, Android APK), amit te csinálsz meg
 - [`docs/image-credits.md`](docs/image-credits.md): a termékfotók forrása és licence
 - [`deploy/selfhost/README.md`](deploy/selfhost/README.md): a saját szerveres staging telepítése és üzemeltetése
