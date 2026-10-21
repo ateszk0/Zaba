@@ -58,6 +58,26 @@ jönnek, ahol a licenc géppel olvasható és ellenőrizhető. Csak **CC0, közk
 a share-alike (SA) képeket átméretezzük és vágjuk, a terméket pedig átadjuk, ezért ott a szerzői jogi helyzet nem egyértelmű.
 A névjelzések listája: [`image-credits.md`](image-credits.md). Ezek ellenőrzött adatok, de nem jogi tanács.
 
+## Saját szerveres környezet (b+ lépés)
+
+Kivitelezés és runbook: [`deploy/selfhost/`](../deploy/selfhost/README.md).
+
+| Téma | Döntés | Miért |
+|---|---|---|
+| Stack | A hivatalos Supabase self-hosting csomag, rögzített kiadás (`self-hosted/v0.8.3`), nem a CLI fejlesztői stackje | A CLI stackjének alapértelmezett JWT-titka és kulcsai nyilvánosan ismertek: egy kiajánlott szerveren bárki hamis `service_role` tokent gyárthatna |
+| Elérés | Cloudflare Tunnel (csak kifelé kapcsolódik), előtte Caddy, három host (app, api, admin) | A szerveren nincs nyitott bejövő port; a stabil címhez van saját domained |
+| API-felület | A Caddy csak a `/rest`, `/auth`, `/realtime`, `/storage`, `/functions` útvonalat adja tovább, minden más 404 | A Studio és a Postgres meta API ugyanazon a gateway mögött él, kívülről nem szabad elérhetőnek lennie |
+| Portok | A gateway és a Caddy alapból csak a loopbacken; a pooler portjai nincsenek közzétéve | A Docker megkerüli az `ufw`-t, ezért nem a tűzfalra bízzuk |
+| Titkok | A telepítő egyszer generálja a szerver `.env`-jébe (600), nem írja ki; újrafuttatás nem írja felül | Egy meglévő adatbázis jelszava nem változhat meg véletlenül |
+| Migrációk | `migrate.sh`: fájlonként egyszer, tranzakcióban, a CLI-vel azonos nyilvántartó táblába írva | A hivatalos csomag nem ad eljárást a saját migrációkhoz |
+
+**Amit a tesztelés megtalált:**
+
+- A self-hosted Realtime a WebSocketen **csak a régi, JWT-s anon kulcsot** fogadja el, az új `sb_publishable_…` kulcsot nem (REST-hez mindkettő jó). Ezért a staging app konfigurációjába az anon JWT kerül. A felhős Supabase-en ez nem probléma, ott az átültetéskor visszaválthatunk a publishable kulcsra.
+- Egy sikeres fizetés két külön sor-módosítást okozott, így az élő követő egy félkész állapotot is látott ("fizetve, de még fizetésre vár"). A `transition_order` most egyetlen módosítással állítja a státuszt és a fizetési státuszt, a `start_payment` pedig nem ír, ha nincs változás. Ezt a `realtime_smoke.py` őrzi.
+- A kliens-oldali útvonalak (`/menu`) alkalmazás-visszaesése nem takarhatja el a hiányzó fájlokat: kiterjesztéssel rendelkező hiányzó fájl valódi 404.
+- A gateway általános CORS-szabálya minden origint enged, így a külön app és api host működik.
+
 ## Nyitott ellenőrzések
 
 - **(h) CanvasKit forrása.** Az alapértelmezett web build a CanvasKitet a Google CDN-jéről

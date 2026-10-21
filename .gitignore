@@ -24,3 +24,6 @@ supabase/.branches/
 # Python bytecode
 __pycache__/
 *.pyc
+
+# Local settings of the self-hosted staging server
+deploy/selfhost/zaba-selfhost.env

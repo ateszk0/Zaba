@@ -1,0 +1,80 @@
+# Reverse proxy and web server of the staging environment.
+#
+# TLS is terminated at Cloudflare (the tunnel), so Caddy serves plain HTTP and
+# must not try to get certificates itself.
+{
+	auto_https off
+	admin off
+}
+
+# The customer app (Flutter web build).
+http://{$ZABA_APP_HOST} {
+	encode zstd gzip
+
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+	}
+
+	# For monitoring. It has its own block because `try_files` below rewrites
+	# every path, and would otherwise turn this into the app's index page.
+	handle /healthz {
+		respond "ok" 200
+	}
+
+	handle {
+		root * /srv/app
+
+		# The loader and the service worker must always be fetched fresh, or a
+		# new deploy would not reach people who already have the app.
+		@fresh path / /index.html /flutter_bootstrap.js /flutter_service_worker.js /version.json /manifest.json
+		header @fresh Cache-Control "no-cache"
+
+		# Client-side routes such as /menu fall back to the app. A missing file
+		# with an extension (an image, a script) stays a real 404, so a broken
+		# asset is not silently answered with HTML.
+		@route {
+			not file
+			not path_regexp \.[A-Za-z0-9]+$
+		}
+		rewrite @route /index.html
+		file_server
+	}
+}
+
+# The admin page (Flutter web build, added in a later step).
+http://{$ZABA_ADMIN_HOST} {
+	root * /srv/admin
+	encode zstd gzip
+
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy no-referrer
+		X-Frame-Options DENY
+		Cache-Control "no-cache"
+	}
+
+	@route {
+		not file
+		not path_regexp \.[A-Za-z0-9]+$
+	}
+	rewrite @route /index.html
+	file_server
+}
+
+# The Supabase API. Only the API paths are passed on: Studio (the dashboard)
+# and the Postgres meta API live behind the same gateway and must NOT be
+# reachable from the internet, so every other path is a plain 404.
+http://{$ZABA_API_HOST} {
+	@api path /rest/v1/* /auth/v1/* /realtime/v1/* /storage/v1/* /functions/v1/*
+
+	handle @api {
+		# WebSocket upgrades (Realtime) are proxied automatically.
+		reverse_proxy api-gw:8000
+	}
+
+	handle {
+		respond "Not found" 404
+	}
+}

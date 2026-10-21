@@ -14,7 +14,7 @@ teljes vásárlási úton. Az architektúra úgy épül, hogy az MVP-be **bőví
 | a2 | Étlap, termék lap, kosár, címválasztó (memóriabeli adatokkal) | kész, jóváhagyásra vár |
 | a3 | Pénztár, szimulált kártyás fizetés, rendeléskövetés, rendeléslista (memóriabeli adatokkal) | kész, jóváhagyásra vár |
 | b | Adatmodell, lokális backend (Supabase), seed adatok, termékfotók | kész, jóváhagyásra vár |
-| b+ | Saját szerveres (staging) környezet | nincs |
+| b+ | Saját szerveres (staging) környezet: telepítő, Caddy, Cloudflare Tunnel, runbook | kész és helyben tesztelt; a Proxmoxon és a tunnelen még nem futott |
 | c–g | Auth, katalógus, kosár, checkout + fake fizetés, rendelésállapot + mini admin | nincs |
 | h–j | Web build + deploy + APK, eszközellenőrzés, átadási csomag | nincs |
 | k | Végleges logó | nincs |
@@ -42,19 +42,23 @@ npx supabase start -x studio,imgproxy,vector,logflare,mailpit   # első indítá
 npx supabase db reset                                           # migrációk + seed adatok
 npx supabase test db                                            # 131 pgTAP-állítás
 python3 supabase/tests/api_smoke.py --from-local                # 20 HTTP-ellenőrzés
+pip install websockets && python3 supabase/tests/realtime_smoke.py --from-local   # élő rendelésfrissítés
 npx supabase stop
 ```
 
-A kliens `SUPABASE_URL`-jét és publikus (publishable) kulcsát a `config/<env>.json` adja, a titkos kulcs sosem kerül az appba.
+A kliens `SUPABASE_URL`-jét és publikus kulcsát a `config/<env>.json` adja, a titkos kulcs sosem kerül az appba.
+A saját szerveres (Proxmox, Cloudflare Tunnel) telepítés leírása: [`deploy/selfhost/README.md`](deploy/selfhost/README.md).
 Az adatmodell: [`docs/data-model.md`](docs/data-model.md).
 
 ## Felépítés
 
 ```
 app/        Flutter kliens (mobil + web); lib/core = közös alap, lib/features = funkciók
+supabase/   adatbázis: migrációk, seed adatok, tesztek (pgTAP, HTTP)
+deploy/     saját szerveres (staging) telepítés: telepítő, Caddy, Cloudflare Tunnel
 config/     környezetenkénti dart-define sablonok (az éles fájlok nincsenek a repóban)
 docs/       döntések és dokumentáció
-tool/       segédscriptek (pl. betűtípus-részhalmaz készítése)
+tool/       segédscriptek (betűtípus-részhalmaz, termékfotók)
 ```
 
 A titkok sosem kerülnek a repóba: lásd `.env.example`. A kliensbe (web build, APK) csak publikus érték kerülhet.
@@ -76,3 +80,4 @@ A titkok sosem kerülnek a repóba: lásd `.env.example`. A kliensbe (web build,
 - [`docs/decisions.md`](docs/decisions.md): technológiai döntések, mérések, nyitott ellenőrzések
 - [`docs/data-model.md`](docs/data-model.md): ER-diagram, a rendelés állapotgépe, ki mit írhat
 - [`docs/image-credits.md`](docs/image-credits.md): a termékfotók forrása és licence
+- [`deploy/selfhost/README.md`](deploy/selfhost/README.md): a saját szerveres staging telepítése és üzemeltetése

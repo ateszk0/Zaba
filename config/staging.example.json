@@ -1,5 +1,5 @@
 {
   "APP_ENV": "staging",
-  "SUPABASE_URL": "https://your-staging-host.example/supabase",
-  "SUPABASE_ANON_KEY": "public anon/publishable key of the self-hosted stack"
+  "SUPABASE_URL": "https://api-staging.your-domain.example",
+  "SUPABASE_ANON_KEY": "the public anon JWT printed by deploy/selfhost/install.sh (not the sb_publishable_ key: the self-hosted Realtime needs the JWT)"
 }
