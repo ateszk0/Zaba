@@ -9,21 +9,6 @@ String forint(int amount) => Money(amount).format();
 /// 2 carbonaras (5 580 Ft) + 990 Ft delivery to district V.
 final total = forint(2 * 2790 + 990);
 
-Future<void> enterAddress(WidgetTester tester) async {
-  await tester.tap(find.text('Add meg a címed'));
-  await tester.pumpAndSettle();
-  await tester.enterText(
-    find.widgetWithText(TextField, 'Irányítószám'),
-    '1051',
-  );
-  await tester.enterText(
-    find.widgetWithText(TextField, 'Utca, házszám'),
-    'Váci utca 12.',
-  );
-  await tester.tap(find.text('Mentés'));
-  await tester.pumpAndSettle();
-}
-
 /// Address, two carbonaras, cart, checkout.
 Future<void> reachCheckout(WidgetTester tester) async {
   await pumpZaba(tester);

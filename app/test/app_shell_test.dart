@@ -40,7 +40,9 @@ void main() {
 
     await tester.tap(tab('Rendeléseim'));
     await tester.pumpAndSettle();
-    expect(find.text('Még nincs rendelésed'), findsOneWidget);
+    // A guest is asked to sign in instead (a signed-in customer sees the
+    // empty list: see auth_flow_test.dart).
+    expect(find.text('Lépj be a rendeléseidhez'), findsOneWidget);
   });
 
   testWidgets('profile explains the demo and opens the dev gallery', (

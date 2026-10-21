@@ -1042,6 +1042,198 @@ abstract class AppLocalizations {
   /// **'Képek forrásai'**
   String get profileImageCredits;
 
+  /// No description provided for @profileSignedOutTitle.
+  ///
+  /// In hu, this message translates to:
+  /// **'Nem vagy bejelentkezve'**
+  String get profileSignedOutTitle;
+
+  /// No description provided for @profileSignedOutBody.
+  ///
+  /// In hu, this message translates to:
+  /// **'Lépj be vagy regisztrálj, hogy rendelni tudj, és lásd a korábbi rendeléseidet.'**
+  String get profileSignedOutBody;
+
+  /// No description provided for @profileSignOut.
+  ///
+  /// In hu, this message translates to:
+  /// **'Kijelentkezés'**
+  String get profileSignOut;
+
+  /// No description provided for @ordersSignedOutTitle.
+  ///
+  /// In hu, this message translates to:
+  /// **'Lépj be a rendeléseidhez'**
+  String get ordersSignedOutTitle;
+
+  /// No description provided for @ordersSignedOutBody.
+  ///
+  /// In hu, this message translates to:
+  /// **'A leadott rendeléseid és azok állapota itt jelenik meg, ha bejelentkezel.'**
+  String get ordersSignedOutBody;
+
+  /// No description provided for @authLoginTitle.
+  ///
+  /// In hu, this message translates to:
+  /// **'Belépés'**
+  String get authLoginTitle;
+
+  /// No description provided for @authRegisterTitle.
+  ///
+  /// In hu, this message translates to:
+  /// **'Regisztráció'**
+  String get authRegisterTitle;
+
+  /// No description provided for @authCheckoutHint.
+  ///
+  /// In hu, this message translates to:
+  /// **'A rendelés leadásához be kell jelentkezned.'**
+  String get authCheckoutHint;
+
+  /// No description provided for @authNameLabel.
+  ///
+  /// In hu, this message translates to:
+  /// **'Név (nem kötelező)'**
+  String get authNameLabel;
+
+  /// No description provided for @authEmailLabel.
+  ///
+  /// In hu, this message translates to:
+  /// **'E-mail-cím'**
+  String get authEmailLabel;
+
+  /// No description provided for @authPasswordLabel.
+  ///
+  /// In hu, this message translates to:
+  /// **'Jelszó'**
+  String get authPasswordLabel;
+
+  /// No description provided for @authPasswordHelper.
+  ///
+  /// In hu, this message translates to:
+  /// **'Legalább {min} karakter'**
+  String authPasswordHelper(int min);
+
+  /// No description provided for @authShowPassword.
+  ///
+  /// In hu, this message translates to:
+  /// **'Jelszó megjelenítése'**
+  String get authShowPassword;
+
+  /// No description provided for @authHidePassword.
+  ///
+  /// In hu, this message translates to:
+  /// **'Jelszó elrejtése'**
+  String get authHidePassword;
+
+  /// No description provided for @authLoginAction.
+  ///
+  /// In hu, this message translates to:
+  /// **'Belépés'**
+  String get authLoginAction;
+
+  /// No description provided for @authRegisterAction.
+  ///
+  /// In hu, this message translates to:
+  /// **'Fiók létrehozása'**
+  String get authRegisterAction;
+
+  /// No description provided for @authSwitchToRegister.
+  ///
+  /// In hu, this message translates to:
+  /// **'Még nincs fiókod? Regisztrálj'**
+  String get authSwitchToRegister;
+
+  /// No description provided for @authSwitchToLogin.
+  ///
+  /// In hu, this message translates to:
+  /// **'Már van fiókod? Lépj be'**
+  String get authSwitchToLogin;
+
+  /// No description provided for @authDemoAccount.
+  ///
+  /// In hu, this message translates to:
+  /// **'Belépés demó fiókkal'**
+  String get authDemoAccount;
+
+  /// No description provided for @authOr.
+  ///
+  /// In hu, this message translates to:
+  /// **'vagy'**
+  String get authOr;
+
+  /// No description provided for @authRegisterDemoNote.
+  ///
+  /// In hu, this message translates to:
+  /// **'Demó: kitalált adatokat adj meg, ne valós személyes adatot.'**
+  String get authRegisterDemoNote;
+
+  /// No description provided for @authEmailRequired.
+  ///
+  /// In hu, this message translates to:
+  /// **'Add meg az e-mail-címet.'**
+  String get authEmailRequired;
+
+  /// No description provided for @authEmailInvalid.
+  ///
+  /// In hu, this message translates to:
+  /// **'Ez nem tűnik érvényes e-mail-címnek.'**
+  String get authEmailInvalid;
+
+  /// No description provided for @authPasswordRequired.
+  ///
+  /// In hu, this message translates to:
+  /// **'Add meg a jelszót.'**
+  String get authPasswordRequired;
+
+  /// No description provided for @authPasswordTooShort.
+  ///
+  /// In hu, this message translates to:
+  /// **'A jelszó legalább {min} karakter legyen.'**
+  String authPasswordTooShort(int min);
+
+  /// No description provided for @authErrorInvalidCredentials.
+  ///
+  /// In hu, this message translates to:
+  /// **'Hibás e-mail-cím vagy jelszó.'**
+  String get authErrorInvalidCredentials;
+
+  /// No description provided for @authErrorEmailTaken.
+  ///
+  /// In hu, this message translates to:
+  /// **'Ezzel az e-mail-címmel már van fiók. Próbálj belépni.'**
+  String get authErrorEmailTaken;
+
+  /// No description provided for @authErrorWeakPassword.
+  ///
+  /// In hu, this message translates to:
+  /// **'Ez a jelszó túl gyenge. Válassz hosszabbat vagy bonyolultabbat.'**
+  String get authErrorWeakPassword;
+
+  /// No description provided for @authErrorEmailNotConfirmed.
+  ///
+  /// In hu, this message translates to:
+  /// **'Az e-mail-címet még meg kell erősíteni. A demó nem küld e-mailt, szólj a fejlesztőnek.'**
+  String get authErrorEmailNotConfirmed;
+
+  /// No description provided for @authErrorTooManyRequests.
+  ///
+  /// In hu, this message translates to:
+  /// **'Túl sok próbálkozás. Várj egy kicsit, és próbáld újra.'**
+  String get authErrorTooManyRequests;
+
+  /// No description provided for @authErrorNetwork.
+  ///
+  /// In hu, this message translates to:
+  /// **'Nem sikerült elérni a szervert. Ellenőrizd a netkapcsolatot.'**
+  String get authErrorNetwork;
+
+  /// No description provided for @authErrorUnknown.
+  ///
+  /// In hu, this message translates to:
+  /// **'Valami nem sikerült. Próbáld újra.'**
+  String get authErrorUnknown;
+
   /// No description provided for @imageCreditsTitle.
   ///
   /// In hu, this message translates to:

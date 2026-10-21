@@ -546,6 +546,114 @@ class AppLocalizationsHu extends AppLocalizations {
   String get profileImageCredits => 'Képek forrásai';
 
   @override
+  String get profileSignedOutTitle => 'Nem vagy bejelentkezve';
+
+  @override
+  String get profileSignedOutBody =>
+      'Lépj be vagy regisztrálj, hogy rendelni tudj, és lásd a korábbi rendeléseidet.';
+
+  @override
+  String get profileSignOut => 'Kijelentkezés';
+
+  @override
+  String get ordersSignedOutTitle => 'Lépj be a rendeléseidhez';
+
+  @override
+  String get ordersSignedOutBody =>
+      'A leadott rendeléseid és azok állapota itt jelenik meg, ha bejelentkezel.';
+
+  @override
+  String get authLoginTitle => 'Belépés';
+
+  @override
+  String get authRegisterTitle => 'Regisztráció';
+
+  @override
+  String get authCheckoutHint => 'A rendelés leadásához be kell jelentkezned.';
+
+  @override
+  String get authNameLabel => 'Név (nem kötelező)';
+
+  @override
+  String get authEmailLabel => 'E-mail-cím';
+
+  @override
+  String get authPasswordLabel => 'Jelszó';
+
+  @override
+  String authPasswordHelper(int min) {
+    return 'Legalább $min karakter';
+  }
+
+  @override
+  String get authShowPassword => 'Jelszó megjelenítése';
+
+  @override
+  String get authHidePassword => 'Jelszó elrejtése';
+
+  @override
+  String get authLoginAction => 'Belépés';
+
+  @override
+  String get authRegisterAction => 'Fiók létrehozása';
+
+  @override
+  String get authSwitchToRegister => 'Még nincs fiókod? Regisztrálj';
+
+  @override
+  String get authSwitchToLogin => 'Már van fiókod? Lépj be';
+
+  @override
+  String get authDemoAccount => 'Belépés demó fiókkal';
+
+  @override
+  String get authOr => 'vagy';
+
+  @override
+  String get authRegisterDemoNote =>
+      'Demó: kitalált adatokat adj meg, ne valós személyes adatot.';
+
+  @override
+  String get authEmailRequired => 'Add meg az e-mail-címet.';
+
+  @override
+  String get authEmailInvalid => 'Ez nem tűnik érvényes e-mail-címnek.';
+
+  @override
+  String get authPasswordRequired => 'Add meg a jelszót.';
+
+  @override
+  String authPasswordTooShort(int min) {
+    return 'A jelszó legalább $min karakter legyen.';
+  }
+
+  @override
+  String get authErrorInvalidCredentials => 'Hibás e-mail-cím vagy jelszó.';
+
+  @override
+  String get authErrorEmailTaken =>
+      'Ezzel az e-mail-címmel már van fiók. Próbálj belépni.';
+
+  @override
+  String get authErrorWeakPassword =>
+      'Ez a jelszó túl gyenge. Válassz hosszabbat vagy bonyolultabbat.';
+
+  @override
+  String get authErrorEmailNotConfirmed =>
+      'Az e-mail-címet még meg kell erősíteni. A demó nem küld e-mailt, szólj a fejlesztőnek.';
+
+  @override
+  String get authErrorTooManyRequests =>
+      'Túl sok próbálkozás. Várj egy kicsit, és próbáld újra.';
+
+  @override
+  String get authErrorNetwork =>
+      'Nem sikerült elérni a szervert. Ellenőrizd a netkapcsolatot.';
+
+  @override
+  String get authErrorUnknown => 'Valami nem sikerült. Próbáld újra.';
+
+  @override
   String get imageCreditsTitle => 'Képek forrásai';
 
   @override

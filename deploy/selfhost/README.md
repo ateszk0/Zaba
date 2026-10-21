@@ -87,6 +87,15 @@ SUPABASE_URL=https://api-staging.<domain> SUPABASE_PUBLISHABLE_KEY=<publishable>
   python3 supabase/tests/realtime_smoke.py
 ```
 
+A **demó fiók** (az app „Belépés demó fiókkal" gombja) a fejlesztői gépről hozható létre; csak a nyilvános regisztrációs végpontot használja, titkos kulcs
+nélkül, és többször is futtatható. Az e-mail és a jelszó ugyanaz legyen, mint a `config/staging.json`-ban (`DEMO_EMAIL`, `DEMO_PASSWORD`; a jelszó az appba van
+fordítva, ezért egy eldobható legyen):
+
+```sh
+SUPABASE_URL=https://api-staging.<domain> SUPABASE_PUBLISHABLE_KEY=<anon kulcs> DEMO_EMAIL=<e-mail> DEMO_PASSWORD=<jelszó> \
+  python3 tool/create_demo_user.py
+```
+
 ## 5. A webes app feltöltése
 
 A fejlesztői gépről (a `config/staging.json` a telepítő kimenete alapján készül, a `.gitignore` kizárja a repóból):
@@ -119,7 +128,7 @@ A teljes gép mentéséhez használd a Proxmox **backup ütemezését** (vzdump)
 - A Docker által közzétett portok: a gateway és a Caddy alapból csak a `127.0.0.1`-en figyel (`ZABA_HTTP_BIND=0.0.0.0` csak szándékos LAN-teszthez; a Docker megkerüli az `ufw`-t, ezért ne bízz a tűzfalban).
 - A Caddy csak az engedélyezett API-útvonalakat adja tovább (`/rest/v1`, `/auth/v1`, `/realtime/v1`, `/storage/v1`, `/functions/v1`); a Studio és a Postgres meta API kívülről 404.
 - A titkok csak a szerver `.env` fájljában vannak (600-as jogosultság). A kliensbe (web, APK) csak a publishable kulcs kerül.
-- A demón az e-mail megerősítés ki van kapcsolva (nincs kimenő levelezés). Az MVP-ben SMTP és megerősítés kell.
+- A demón az e-mail megerősítés ki van kapcsolva (az `install.sh` `ENABLE_EMAIL_AUTOCONFIRM=true`-t állít; nincs kimenő levelezés), a regisztráció nyilvános. Az MVP-ben SMTP és megerősítés kell.
 
 ## 8. Hibaelhárítás
 

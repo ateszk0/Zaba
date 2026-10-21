@@ -1,5 +1,7 @@
 {
   "APP_ENV": "demo",
   "SUPABASE_URL": "https://your-project-ref.supabase.co",
-  "SUPABASE_ANON_KEY": "public anon/publishable key of the hosted demo project"
+  "SUPABASE_ANON_KEY": "public anon/publishable key of the hosted demo project",
+  "DEMO_EMAIL": "email of the demo account (created by tool/create_demo_user.py)",
+  "DEMO_PASSWORD": "its password: shipped inside the app, so use a throw-away one"
 }

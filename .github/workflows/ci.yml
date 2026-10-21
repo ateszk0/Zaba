@@ -59,6 +59,25 @@ jobs:
       - run: python3 -m pip install --quiet websockets==17.3
       - run: python3 supabase/tests/realtime_smoke.py --from-local
 
+      # Twice: the second run must find the account and leave it alone.
+      - run: python3 tool/create_demo_user.py --from-local
+      - run: python3 tool/create_demo_user.py --from-local
+
+      # The app's own sign-in code against the real auth server.
+      - uses: subosito/flutter-action@v2.23.0
+        with:
+          flutter-version: 3.47.0
+          channel: stable
+          cache: true
+      - name: Auth integration test
+        working-directory: app
+        run: |
+          flutter pub get
+          key="$(npx supabase status -o json | python3 -c 'import json, sys; t = sys.stdin.read(); print(json.loads(t[t.index("{"):])["PUBLISHABLE_KEY"])')"
+          flutter test test/integration \
+            --dart-define=ZABA_TEST_SUPABASE_URL=http://127.0.0.1:54321 \
+            --dart-define=ZABA_TEST_SUPABASE_KEY="$key"
+
       - if: always()
         run: npx supabase stop --no-backup
 

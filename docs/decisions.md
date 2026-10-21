@@ -13,7 +13,7 @@ Flutter demóalkalmazás alapján készült. A tulajdonos ezt saját munkájaké
 architektúrájához igazítva, újraírva került át (Riverpod, szerveroldali árazás szerződése, saját téma és szövegek).
 Kupon, borravaló, elsőbbségi kiszállítás, kedvencek, több étterem és emoji-illusztrációk nem kerültek át. Az átadott
 alkalmazás eredetét külső forrásból nem tudtam ellenőrizni (a README szerint saját, és nem tartalmaz ismert
-szolgáltatói azonosítókat); **az átadás előtt a tulajdonosnak írásban meg kell erősítenie, hogy az saját munkája.**
+szolgáltatói azonosítókat). **A tulajdonos 2026-10-21-én a fejlesztői beszélgetésben írásban megerősítette, hogy a „Falatozó" saját munkája.** Az átadási csomagba ezt a megrendelő felé is érdemes rögzíteni (jogi szöveg: ügyvéddel egyeztetendő).
 
 ## Technológiai döntések
 
@@ -51,7 +51,7 @@ Részletek: [`data-model.md`](data-model.md). A fontos döntések:
 | Állapotgép | Az `order_status_transitions` tábla, amit a `private.transition_order` kényszerít ki | Új állapot felvétele egy helyen történik |
 | Idősávok | A szerver rakja ki a bolt időzónájában; "foglalható" egyetlen szabály szerint dől el, a listázás és a rendelés ugyanazt használja | A nyitvatartás módosítása után a régi sorok nem maradnak foglalhatók (ezt egy teszt találta meg) |
 | Seed | A katalógus SQL-je a Dart demóadatokból generálódik (`app/tool/seed_sql.dart`), egy teszt őrzi az egyezést | Egy forrás, nincs eltérés az app és az adatbázis között |
-| Tesztek | 131 pgTAP-állítás (`supabase test db`) + 20 HTTP-ellenőrzés (`supabase/tests/api_smoke.py`) | A jogosultságokat valódi szerepkörökkel és valódi HTTP-hívásokkal is próbáljuk |
+| Tesztek | 136 pgTAP-állítás (`supabase test db`) + 20 HTTP-ellenőrzés (`supabase/tests/api_smoke.py`) | A jogosultságokat valódi szerepkörökkel és valódi HTTP-hívásokkal is próbáljuk |
 
 **Termékfotók.** Az Unsplash/Pexels kulcs vagy kézi böngészés nélkül nem keresgélhető géppel, ezért a fotók a Wikimedia Commonsból
 jönnek, ahol a licenc géppel olvasható és ellenőrizhető. Csak **CC0, közkincs és CC BY** (csak névjelzés) licencű kép fogadható el:
@@ -77,6 +77,37 @@ Kivitelezés és runbook: [`deploy/selfhost/`](../deploy/selfhost/README.md).
 - Egy sikeres fizetés két külön sor-módosítást okozott, így az élő követő egy félkész állapotot is látott ("fizetve, de még fizetésre vár"). A `transition_order` most egyetlen módosítással állítja a státuszt és a fizetési státuszt, a `start_payment` pedig nem ír, ha nincs változás. Ezt a `realtime_smoke.py` őrzi.
 - A kliens-oldali útvonalak (`/menu`) alkalmazás-visszaesése nem takarhatja el a hiányzó fájlokat: kiterjesztéssel rendelkező hiányzó fájl valódi 404.
 - A gateway általános CORS-szabálya minden origint enged, így a külön app és api host működik.
+
+## Belépés (c lépés)
+
+| Téma | Döntés | Miért |
+|---|---|---|
+| Ki mit lát | Az étlap és a kosár vendégként is használható; a pénztár, a fizetés és a rendelés-követés belépést kér (a vendég a belépés után oda kerül vissza, ahová tartott, a kosara megmarad). A Rendeléseim fül vendégnek belépési felhívást mutat | A bemutatón ne legyen fal a böngészés előtt, a rendelés viszont fiókhoz kötött (RLS) |
+| Mód | E-mail + jelszó, e-mail-megerősítés **kikapcsolva** (lokálisan `config.toml`, self-hostnál `ENABLE_EMAIL_AUTOCONFIRM`) | A beépített levélküldés erősen korlátozott; a demón kitalált adatok vannak. Az MVP-ben megerősítés kell, az app már kezeli a „nincs session" esetet (`emailNotConfirmed`) |
+| Demó fiók | A belépő képernyő „Belépés demó fiókkal" gombja a `DEMO_EMAIL` / `DEMO_PASSWORD` build-értékekből lép be; a fiókot a `tool/create_demo_user.py` hozza létre (csak a nyilvános regisztrációs végpontot használja, titok nélkül) | A jelszó az appba van fordítva, ezért eldobható fiók, kitalált adatokkal; nem titok. Az adatbázis `db reset` után a fiók elvész, a szkript újrafuttatható |
+| Vendég-belépés (anonim) | Elvetve | Minden megnyitás új, üres felhasználót csinálna, és nem lenne előre kitöltött demó adat |
+| Offline mód | `SUPABASE_URL` nélkül az app a memóriabeli adatokon fut, egy beépített demó fiókkal | `flutter run` backend nélkül is megy, a CI build nem kér titkot. A banner továbbra is jelzi, hogy demó |
+| Réteg | `AuthRepository` interfész, kétféle megvalósítás (memóriabeli és Supabase); a hibák egyetlen típusba (`AuthFailure`) fordulnak, a szerver szövege sosem jut a felhasználóig | A hibaüzenetek magyarok és egy helyen vannak; a szerver üzenete nem szivárog ki |
+| Hibák felismerése | A GoTrue hibakódja (`invalid_credentials`, `user_already_exists`, …), nem a szövege | A szöveg változhat, a kód stabil |
+| Munkamenet | A Supabase kliens kezeli és frissíti; weben a böngésző `localStorage`-ában él (újratöltés után bent marad, böngészőben ellenőrizve). `detectSessionInUri` kikapcsolva | A webes URL töredéke a routeré (`#/…`), az app nem használ e-mail linket |
+| Átirányítás | A router a vendéget a belépésre küldi (`/login?from=…`), a `from` csak alkalmazáson belüli útvonal lehet. Belépés után a képernyő maga lép tovább | A `redirect` egy ráfordított (pushed) oldalnál csak az alatta lévő oldalt látja, ezt egy teszt találta meg |
+| Függőség | `supabase_flutter` 2.18.3 (a hivatalos Supabase SDK; a pub.dev ellenőrzött kiadója `supabase.io`, licenc MIT, 2026-10-21-én nincs visszavonási vagy biztonsági figyelmeztetés), a verzió a `pubspec.lock`-ban rögzített | A terv eleve ezt tartalmazza; a licenc bekerül az átadási licenclistába |
+| Regisztráció | Név (nem kötelező), e-mail, jelszó (min. 8 karakter, a `config.toml`-lal egyezően); a név a `profiles`-ba kerül egy adatbázis-trigger által | A jelszószabályt a szerver érvényesíti, a kliens csak időt spórol |
+
+**Amit a tesztelés megtalált:**
+
+- Egy túl hosszú név (a `profiles.full_name` 200 karakternél korlátoz) az **egész regisztrációt** megbuktatta volna (adatbázishiba a triggerben). A `20261021100000_signup_robustness.sql` levágja a nevet; az app is korlátozza a mezőt, és a `070_signup.test.sql` őrzi.
+- A valódi Supabase-kliens PKCE-tárolót kér, amit az alkalmazás a `shared_preferences`-ből kap; a Dart-tesztben memóriabeli tároló áll a helyén.
+- Vendégként a `profiles` táblához nincs jog (`permission denied`), nem üres lista: ez a zárt alapértelmezés következménye, és így jó.
+
+**Ismert korlátok (demó, az MVP-ben kezelendő):**
+
+- A „már van fiók ezzel a címmel" üzenet elárulja, hogy egy cím regisztrált-e (felhasználó-felderítés). Megerősítéssel az MVP-ben ez elkerülhető.
+- A rendelések még a memóriabeli tárból jönnek, nem felhasználónként: kijelentkezés után egy másik fiók ugyanazon az eszközön látná őket. A következő lépések (pénztár és rendelés a szerveren, RLS) ezt megszüntetik.
+- Profilszerkesztés (név, telefon, allergén-figyelmeztetések, mentett címek) nincs; az adatbázis előkészített hozzá.
+- Elfelejtett jelszó nincs (e-mail küldés nélkül nem működik).
+
+**Mérés a c lépés után** (`flutter build web --release`, `supabase_flutter`-rel és az a2–a3 funkcióival): `main.dart.js` 3,47 MB nyers, 1,00 MB gzip -9 (az (a) lépés után 2,9 / 0,83 MB; a növekedés nem csak a Supabase-klienstől van).
 
 ## Nyitott ellenőrzések
 

@@ -1,0 +1,4 @@
+tags:
+  # Needs a running Supabase (see test/integration/). Skipped unless the
+  # ZABA_TEST_SUPABASE_* values are passed with --dart-define.
+  integration:
