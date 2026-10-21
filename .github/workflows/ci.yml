@@ -20,9 +20,9 @@ jobs:
       run:
         working-directory: app
     steps:
-      - uses: actions/checkout@v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: subosito/flutter-action@v2.23.0
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           flutter-version: 3.47.0
           channel: stable
@@ -32,21 +32,38 @@ jobs:
       - run: dart format --output=none --set-exit-if-changed .
       - run: flutter analyze
       - run: flutter test
-      - run: flutter build web --release --dart-define=APP_ENV=dev
+      # The two web apps, built the way the demo environment builds them (the
+      # rendering engine from our own host, no generated code, the security headers).
+      - name: Build the demo web apps
+        working-directory: .
+        run: |
+          printf '{"APP_ENV":"demo","SUPABASE_URL":"https://ci.example.supabase.co","SUPABASE_ANON_KEY":"ci-placeholder"}' > "$RUNNER_TEMP/ci-config.json"
+          deploy/demo/build-web.sh app "$RUNNER_TEMP/ci-config.json"
+          deploy/demo/build-web.sh admin "$RUNNER_TEMP/ci-config.json"
+          grep -q "connect-src 'self' https://ci.example.supabase.co wss://ci.example.supabase.co" app/build/demo/app/_headers
+          test -f app/build/demo/app/canvaskit/canvaskit.wasm
+          grep -q "Zaba admin" app/build/demo/admin/manifest.json
 
   database:
     name: Database (migrations, pgTAP tests, API smoke test)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-node@v7.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
           cache: npm
 
       # The Supabase CLI is pinned in package.json.
       - run: npm ci
+
+      # The payment provider's signing secret for the local stack's Edge
+      # Functions: random, for this run only (the CLI reads supabase/.env).
+      - run: printf 'FAKE_PAYMENT_WEBHOOK_SECRET=%s\nFAKE_PAYMENTS_ENABLED=true\n' "$(openssl rand -hex 32)" > supabase/.env
+
+      # The shared payment code (signing, sessions, webhook verification).
+      - run: npm run test:functions
 
       # Local stack without the parts the tests do not need.
       - run: npx supabase start -x studio,imgproxy,vector,logflare,mailpit
@@ -59,41 +76,61 @@ jobs:
       - run: python3 -m pip install --quiet websockets==17.3
       - run: python3 supabase/tests/realtime_smoke.py --from-local
 
+      # The payment path through the real Edge Functions.
+      - run: python3 supabase/tests/payment_smoke.py --from-local
+
       # Twice: the second run must find the account and leave it alone.
       - run: python3 tool/create_demo_user.py --from-local
       - run: python3 tool/create_demo_user.py --from-local
 
+      # The staff accounts of the admin page (again twice for the first).
+      - run: python3 tool/create_staff_user.py --from-local --role operator
+      - run: python3 tool/create_staff_user.py --from-local --role operator
+      - run: python3 tool/create_staff_user.py --from-local --role admin
+
       # The app's own sign-in code against the real auth server.
-      - uses: subosito/flutter-action@v2.23.0
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           flutter-version: 3.47.0
           channel: stable
           cache: true
-      - name: Auth integration test
+      - name: App integration tests (auth, menu, cart, orders, payment, admin)
         working-directory: app
         run: |
           flutter pub get
-          key="$(npx supabase status -o json | python3 -c 'import json, sys; t = sys.stdin.read(); print(json.loads(t[t.index("{"):])["PUBLISHABLE_KEY"])')"
+          # The legacy anon JWT, as on the self-hosted staging.
+          stack_status="$(npx supabase status -o json)"
+          key="$(python3 -c 'import json, sys; t = sys.argv[1]; print(json.loads(t[t.index("{"):])["ANON_KEY"])' "$stack_status")"
+          secret="$(python3 -c 'import json, sys; t = sys.argv[1]; print(json.loads(t[t.index("{"):])["SECRET_KEY"])' "$stack_status")"
           flutter test test/integration \
             --dart-define=ZABA_TEST_SUPABASE_URL=http://127.0.0.1:54321 \
-            --dart-define=ZABA_TEST_SUPABASE_KEY="$key"
+            --dart-define=ZABA_TEST_SUPABASE_KEY="$key" \
+            --dart-define=ZABA_TEST_SUPABASE_SECRET_KEY="$secret"
 
       - if: always()
         run: npx supabase stop --no-backup
 
   deploy-files:
-    name: Deployment files (shell scripts, Caddyfile)
+    name: Deployment files (shell scripts, Caddyfile) and the development guide
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - run: shellcheck -x -S warning deploy/selfhost/*.sh
+      - run: shellcheck -x -S warning deploy/selfhost/*.sh deploy/demo/*.sh tool/android/*.sh tool/*.sh
+      - name: Python scripts compile
+        run: python3 -m py_compile tool/*.py tool/brand/*.py tool/fonts/*.py tool/images/*.py supabase/tests/*.py
+
+      # Every class, field, function, migration object and script has to be described in
+      # docs/development.md (a new one without its description fails here).
+      - name: The development guide covers the code
+        run: python3 tool/dev_inventory.py --check --list
 
       # The same image and version the server runs.
       - name: Validate the Caddyfile
         run: >
           docker run --rm
           -e ZABA_APP_HOST=app.example.org -e ZABA_API_HOST=api.example.org -e ZABA_ADMIN_HOST=admin.example.org
+          -e ZABA_PUBLIC_SCHEME=https -e ZABA_PUBLIC_WS_SCHEME=wss
           -v "$PWD/deploy/selfhost/Caddyfile:/etc/caddy/Caddyfile:ro"
           caddy:2.11.7 caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
 
@@ -101,7 +138,7 @@ jobs:
     name: Secret scan (full history)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 

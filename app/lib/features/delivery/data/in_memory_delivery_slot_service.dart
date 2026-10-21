@@ -29,6 +29,12 @@ class InMemoryDeliverySlotService implements DeliverySlotService {
       final slots = [
         for (var hour = _openingHour; hour < _closingHour(date); hour++)
           DeliverySlot(
+            id: DateTime(
+              date.year,
+              date.month,
+              date.day,
+              hour,
+            ).toIso8601String(),
             start: DateTime(date.year, date.month, date.day, hour),
             end: DateTime(date.year, date.month, date.day, hour + 1),
           ),
@@ -41,6 +47,10 @@ class InMemoryDeliverySlotService implements DeliverySlotService {
   @override
   Future<bool> isAvailable(DeliverySlot slot, {required DateTime now}) async {
     final available = await availableDays(now: now);
-    return available.any((day) => day.slots.contains(slot));
+    return available.any(
+      (day) => day.slots.any(
+        (open) => open.start == slot.start && open.end == slot.end,
+      ),
+    );
   }
 }

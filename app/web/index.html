@@ -5,22 +5,41 @@
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- No viewport-fit=cover on purpose. Without it the browser lays the page out
+       inside the safe area (clear of the notch and the home indicator) and fills
+       the strip left over with the page background (splash.css: cream). With it
+       the page runs under the notch, and Flutter's web engine passes no
+       safe-area insets on to the app (checked with an emulated 47 / 34 px inset:
+       the layout does not move), so the bottom navigation would sit under the
+       home indicator and the sides would be cut off in landscape. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Zaba - ételrendelő demó">
   <meta name="theme-color" content="#2F7A3E">
 
-  <!-- iOS: "Add to Home Screen" behaviour. Splash/safe-area handling is finished in step (h). -->
+  <!-- iOS: "Add to Home Screen" opens the app without the browser bars. -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Zaba">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
   <link rel="icon" type="image/png" href="favicon.png"/>
   <link rel="manifest" href="manifest.json">
+  <!-- The loading screen is a plain stylesheet and script, not inline code, so a
+       strict Content-Security-Policy can forbid inline scripts. -->
+  <link rel="stylesheet" href="splash.css">
   <title>Zaba</title>
 </head>
 <body>
+  <div id="splash" role="status" aria-live="polite">
+    <img class="mark" src="icons/logo-mark.svg" alt="" width="72" height="78">
+    <div class="name">Zaba</div>
+    <div class="spinner" aria-hidden="true"></div>
+    <div class="note">Betöltés…</div>
+    <noscript>Az alkalmazás használatához JavaScript szükséges.</noscript>
+  </div>
+  <script src="splash.js" defer></script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

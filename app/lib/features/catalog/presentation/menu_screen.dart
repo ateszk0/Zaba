@@ -236,9 +236,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                   error: (error, stackTrace) => [
                     SliverFillRemaining(
                       hasScrollBody: false,
-                      child: ErrorView(
-                        onRetry: () => ref.invalidate(productsProvider),
-                      ),
+                      child: ErrorView(onRetry: () => reloadMenu(ref)),
                     ),
                   ],
                   data: (products) {

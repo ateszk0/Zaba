@@ -1,0 +1,11 @@
+{
+  // The app as a Worker that only serves static files (no code): Cloudflare's
+  // recommended way to host a static site. Built by build-web.sh.
+  "name": "zaba-app",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "../../app/build/demo/app",
+    // Client-side routes fall back to index.html.
+    "not_found_handling": "single-page-application"
+  }
+}

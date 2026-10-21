@@ -48,42 +48,57 @@ class ProductCard extends ConsumerWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: AppSpacing.sm),
-                    Row(
-                      children: [
-                        Text(
-                          product.price.format(),
-                          style: textTheme.titleMedium?.copyWith(
-                            fontFeatures: AppTypography.priceFeatures,
+                    // Price left, button right. On a narrow screen (or with a big
+                    // system font) the quantity stepper does not fit next to the
+                    // price, so it moves to a line of its own instead of being cut.
+                    // The full width, or a Wrap is only as wide as its content and the
+                    // button would sit next to the price instead of at the right edge.
+                    SizedBox(
+                      width: double.infinity,
+                      child: Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        runSpacing: AppSpacing.xs,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                product.price.format(),
+                                style: textTheme.titleMedium?.copyWith(
+                                  fontFeatures: AppTypography.priceFeatures,
+                                ),
+                              ),
+                              if (product.vegetarian) ...[
+                                const SizedBox(width: AppSpacing.sm),
+                                Icon(
+                                  Icons.eco_rounded,
+                                  size: 18,
+                                  color: AppColors.green700,
+                                  semanticLabel: AppLocalizations.of(context)
+                                      .productVegetarian,
+                                ),
+                              ],
+                            ],
                           ),
-                        ),
-                        if (product.vegetarian) ...[
-                          const SizedBox(width: AppSpacing.sm),
-                          Icon(
-                            Icons.eco_rounded,
-                            size: 18,
-                            color: AppColors.green700,
-                            semanticLabel: AppLocalizations.of(context)
-                                .productVegetarian,
-                          ),
-                        ],
-                        const Spacer(),
-                        if (quantity == 0)
-                          IconButton.filled(
-                            onPressed: () => cart.add(product.id),
-                            tooltip: AppLocalizations.of(context).productAdd,
-                            constraints: const BoxConstraints.tightFor(
-                              width: 44,
-                              height: 44,
+                          if (quantity == 0)
+                            IconButton.filled(
+                              onPressed: () => cart.add(product.id),
+                              tooltip: AppLocalizations.of(context).productAdd,
+                              constraints: const BoxConstraints.tightFor(
+                                width: 44,
+                                height: 44,
+                              ),
+                              icon: const Icon(Icons.add_rounded),
+                            )
+                          else
+                            QuantityStepper(
+                              quantity: quantity,
+                              onIncrement: () => cart.increment(product.id),
+                              onDecrement: () => cart.decrement(product.id),
                             ),
-                            icon: const Icon(Icons.add_rounded),
-                          )
-                        else
-                          QuantityStepper(
-                            quantity: quantity,
-                            onIncrement: () => cart.increment(product.id),
-                            onDecrement: () => cart.decrement(product.id),
-                          ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),

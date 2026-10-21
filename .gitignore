@@ -17,6 +17,8 @@ kinyert_funkciok/
 
 # --- Tooling ------------------------------------------------------------------
 node_modules/
+# Local state of `wrangler dev` (tool/lan_preview.sh).
+.wrangler/
 .DS_Store
 supabase/.temp/
 supabase/.branches/

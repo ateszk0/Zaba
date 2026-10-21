@@ -20,4 +20,12 @@ abstract final class AppConfig {
   /// demo may use it, so it is not a secret. The button is hidden when unset.
   static const demoEmail = String.fromEnvironment('DEMO_EMAIL');
   static const demoPassword = String.fromEnvironment('DEMO_PASSWORD');
+
+  /// A staff account behind the admin page's "sign in as demo staff" button. Left
+  /// unset in the builds a customer can open: the password would sit in a public
+  /// web page. The button is hidden when unset.
+  static const adminDemoEmail = String.fromEnvironment('ADMIN_DEMO_EMAIL');
+  static const adminDemoPassword = String.fromEnvironment(
+    'ADMIN_DEMO_PASSWORD',
+  );
 }

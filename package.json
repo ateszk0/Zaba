@@ -1,8 +1,13 @@
 {
   "name": "zaba",
   "private": true,
+  "type": "module",
   "description": "Tooling for the Zaba repository (Supabase CLI). The app itself is Flutter, see app/.",
+  "scripts": {
+    "test:functions": "node --test supabase/functions/_shared/"
+  },
   "devDependencies": {
-    "supabase": "2.121.0"
+    "supabase": "2.121.0",
+    "wrangler": "4.149.0"
   }
 }

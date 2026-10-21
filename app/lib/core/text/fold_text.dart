@@ -11,8 +11,8 @@ const _folded = {
 };
 
 /// Lower-cases [input] and removes Hungarian diacritics, so a search for
-/// "rantott" finds "Rántott". Used to filter the small in-memory demo catalog;
-/// the real backend does the same with Postgres `unaccent`.
+/// "rantott" finds "Rántott". The menu is downloaded once and searched here, in
+/// the app (docs/decisions.md says when this has to move to the server).
 String foldText(String input) {
   final buffer = StringBuffer();
   for (final rune in input.toLowerCase().runes) {

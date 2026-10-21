@@ -21,8 +21,6 @@ class CartScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final itemCount = ref.watch(cartItemCountProvider);
-    final quoteAsync = ref.watch(cartQuoteProvider);
-    final quote = quoteAsync.value;
 
     if (itemCount == 0) {
       return Scaffold(
@@ -39,11 +37,15 @@ class CartScreen extends ConsumerWidget {
       );
     }
 
+    // Only now: an empty cart is not priced.
+    final quoteAsync = ref.watch(cartQuoteProvider);
+    final quote = quoteAsync.value;
+
     if (quote == null) {
       return Scaffold(
         appBar: AppBar(title: Text(l10n.navCart)),
         body: quoteAsync.hasError
-            ? ErrorView(onRetry: () => ref.invalidate(cartQuoteProvider))
+            ? ErrorView(onRetry: () => reloadCartQuote(ref))
             : const LoadingView(),
       );
     }

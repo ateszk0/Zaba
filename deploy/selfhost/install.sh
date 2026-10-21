@@ -96,9 +96,20 @@ set_env ADDITIONAL_REDIRECT_URLS "$scheme://$ZABA_APP_HOST,$scheme://$ZABA_ADMIN
 set_env ENABLE_EMAIL_AUTOCONFIRM true
 set_env ENABLE_PHONE_SIGNUP false
 set_env ENABLE_PHONE_AUTOCONFIRM false
+# The payment provider's signing secret. The payment functions refuse to work
+# without it. Generated once, like the others: a new one would make payment
+# sessions that are still open invalid.
+if ! grep -q '^FAKE_PAYMENT_WEBHOOK_SECRET=.' .env; then
+  set_env FAKE_PAYMENT_WEBHOOK_SECRET "$(openssl rand -hex 32)"
+fi
+# The demo's fake card step is allowed on a fresh stack (this kit is the demo's staging). A
+# server that takes real payments sets it to false in .env, and this line then leaves it alone.
+grep -q '^FAKE_PAYMENTS_ENABLED=' .env || set_env FAKE_PAYMENTS_ENABLED true
 set_env ZABA_APP_HOST "$ZABA_APP_HOST"
 set_env ZABA_API_HOST "$ZABA_API_HOST"
 set_env ZABA_ADMIN_HOST "$ZABA_ADMIN_HOST"
+set_env ZABA_PUBLIC_SCHEME "$scheme"
+set_env ZABA_PUBLIC_WS_SCHEME "$([ "$scheme" = https ] && echo wss || echo ws)"
 set_env ZABA_HTTP_BIND "${ZABA_HTTP_BIND:-127.0.0.1}"
 set_env ZABA_HTTP_PORT "${ZABA_HTTP_PORT:-8080}"
 set_env CLOUDFLARE_TUNNEL_TOKEN "${CLOUDFLARE_TUNNEL_TOKEN:-}"
@@ -109,18 +120,44 @@ mkdir -p zaba/web/app zaba/web/admin
 cp "$here/docker-compose.zaba.yml" docker-compose.zaba.yml
 cp "$here/Caddyfile" zaba/Caddyfile
 [ -f zaba/web/app/index.html ] || printf '<!doctype html><meta charset="utf-8"><title>Zaba</title><p>Zaba staging: the app has not been deployed yet.</p>\n' > zaba/web/app/index.html
-[ -f zaba/web/admin/index.html ] || printf '<!doctype html><meta charset="utf-8"><title>Zaba admin</title><p>The admin page comes in a later step.</p>\n' > zaba/web/admin/index.html
+[ -f zaba/web/admin/index.html ] || printf '<!doctype html><meta charset="utf-8"><title>Zaba admin</title><p>The admin page has not been deployed yet (deploy-web.sh user@server admin).</p>\n' > zaba/web/admin/index.html
 if ! grep -q 'docker-compose.zaba.yml' .env; then
   sh run.sh config add zaba >/dev/null
 fi
+
+say "Edge Functions (payments)"
+# Functions are installed by placing their files where the Edge Runtime looks.
+# The official `main` router stays; Zaba's functions and their shared code are
+# copied next to it. Test files are not needed on the server.
+repo="$(cd "$here/../.." && pwd)"
+mkdir -p volumes/functions
+cp -a "$repo/supabase/functions/." volumes/functions/
+find volumes/functions -name '*.test.ts' -delete
 
 say "Pulling images (the first time this is several GB)"
 docker compose pull --quiet
 
 say "Starting the stack"
 sh run.sh start
-# Picks up a changed Caddyfile (its admin endpoint is off, so no live reload).
-docker compose restart caddy >/dev/null
+# Picks up a changed Caddyfile (its admin endpoint is off, so no live reload)
+# and changed function code.
+docker compose restart caddy functions >/dev/null
+# The gateway health-checks the functions every 5 seconds: two good answers make
+# a restarted container healthy, three bad ones make it unhealthy. While it
+# catches up the gateway answers 503, and it can even let a request through
+# first and turn back to 503 a few seconds later. So one good answer proves
+# nothing: wait for a run of them that is longer than the three missed checks
+# (8 x 2 s). The empty request is refused by the function itself, which is the
+# right answer.
+good=0
+for _ in $(seq 1 45); do
+  code="$(curl -s -o /dev/null -m 5 -w '%{http_code}' -X POST \
+    "http://127.0.0.1:${API_GW_HTTP_PORT:-8000}/functions/v1/payments-webhook" || true)"
+  case "$code" in 000|503) good=0 ;; *) good=$((good + 1)) ;; esac
+  [ "$good" -ge 8 ] && break
+  sleep 2
+done
+[ "$good" -ge 8 ] || echo "WARNING: the payment functions do not answer steadily yet (HTTP $code). Check: sh run.sh logs functions"
 if [ -n "${CLOUDFLARE_TUNNEL_TOKEN:-}" ]; then
   docker compose --profile tunnel up -d --wait
   tunnel="running"
@@ -132,6 +169,9 @@ say "Database: migrations and seed data"
 "$here/migrate.sh"
 "$here/seed.sh"
 
+say "Scheduled jobs (unpaid orders expire)"
+"$here/schedule.sh"
+
 anon_key="$(grep '^ANON_KEY=' .env | cut -d= -f2-)"
 cat <<EOF
 
@@ -139,7 +179,7 @@ cat <<EOF
 
   App:     $scheme://$ZABA_APP_HOST
   API:     $scheme://$ZABA_API_HOST
-  Admin:   $scheme://$ZABA_ADMIN_HOST   (placeholder for now)
+  Admin:   $scheme://$ZABA_ADMIN_HOST   (deploy it with deploy-web.sh ... admin)
   Tunnel:  $tunnel
   Direct:  http://${ZABA_HTTP_BIND:-127.0.0.1}:${ZABA_HTTP_PORT:-8080}  (Host header decides which of the three)
 

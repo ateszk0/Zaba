@@ -6,35 +6,46 @@ import 'package:zaba/app.dart';
 import 'package:zaba/core/clock/clock.dart';
 import 'package:zaba/features/auth/application/auth_providers.dart';
 import 'package:zaba/features/auth/data/in_memory_auth_repository.dart';
+import 'package:zaba/features/auth/domain/auth_repository.dart';
 import 'package:zaba/features/payment/application/payment_providers.dart';
 import 'package:zaba/features/catalog/application/catalog_providers.dart';
 import 'package:zaba/features/catalog/data/in_memory_catalog_repository.dart';
+import 'package:zaba/features/catalog/domain/catalog_repository.dart';
 
 import 'test_catalog.dart';
 
-/// Pumps the whole app on a 390 x 844 phone screen with the small test catalog
-/// instead of the demo data.
+/// Pumps the whole app on a 390 x 844 phone screen (or the logical [screen]
+/// given, with the system font enlarged by [textScale]) with the small test
+/// catalog instead of the demo data.
 ///
 /// Signed in as the demo customer, unless [signedIn] is false: the checkout and
-/// the orders need an account, and most flows are about them.
+/// the orders need an account, and most flows are about them. A test that needs
+/// other accounts passes its own [auth].
 Future<void> pumpZaba(
   WidgetTester tester, {
   List<Override> overrides = const [],
   DateTime? now,
   bool signedIn = true,
+  AuthRepository? auth,
+  CatalogRepository? catalog,
+  Size screen = const Size(390, 844),
+  double textScale = 1,
 }) async {
-  tester.view.physicalSize = const Size(1170, 2532);
+  tester.view.physicalSize = screen * 3;
   tester.view.devicePixelRatio = 3;
   addTearDown(tester.view.reset);
+  tester.platformDispatcher.textScaleFactorTestValue = textScale;
+  addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
 
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         catalogRepositoryProvider.overrideWithValue(
-          const InMemoryCatalogRepository(
-            categoryList: testCategories,
-            productList: testProducts,
-          ),
+          catalog ??
+              const InMemoryCatalogRepository(
+                categoryList: testCategories,
+                productList: testProducts,
+              ),
         ),
         // A pinned clock keeps the delivery slots predictable, and the fake
         // payment provider answers at once.
@@ -43,10 +54,11 @@ Future<void> pumpZaba(
         ),
         paymentProcessingDelayProvider.overrideWithValue(Duration.zero),
         authRepositoryProvider.overrideWithValue(
-          InMemoryAuthRepository(
-            accounts: [offlineDemoAccount],
-            signedInAs: signedIn ? offlineDemoAccount.email : null,
-          ),
+          auth ??
+              InMemoryAuthRepository(
+                accounts: [offlineDemoAccount],
+                signedInAs: signedIn ? offlineDemoAccount.email : null,
+              ),
         ),
         ...overrides,
       ],

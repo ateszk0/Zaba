@@ -1,3 +1,4 @@
+import 'package:zaba/core/money/money.dart';
 import 'package:zaba/features/cart/data/in_memory_quote_service.dart';
 import 'package:zaba/features/catalog/data/in_memory_catalog_repository.dart';
 import 'package:zaba/features/delivery/data/in_memory_delivery_slot_service.dart';
@@ -5,7 +6,9 @@ import 'package:zaba/features/delivery/data/in_memory_delivery_zone_repository.d
 import 'package:zaba/features/delivery/domain/delivery_address.dart';
 import 'package:zaba/features/delivery/domain/delivery_slot.dart';
 import 'package:zaba/features/orders/data/in_memory_order_store.dart';
+import 'package:zaba/features/orders/domain/order.dart';
 import 'package:zaba/features/orders/domain/order_repository.dart';
+import 'package:zaba/features/orders/domain/order_status.dart';
 
 import 'test_catalog.dart';
 
@@ -14,6 +17,7 @@ final fixedNow = DateTime(2026, 10, 21, 10);
 
 /// A slot that is bookable at [fixedNow].
 final bookableSlot = DeliverySlot(
+  id: 'bookable',
   start: DateTime(2026, 10, 21, 12),
   end: DateTime(2026, 10, 21, 13),
 );
@@ -47,4 +51,34 @@ PlaceOrderRequest validRequest({String key = 'key-1'}) => PlaceOrderRequest(
   address: innerAddress,
   slot: bookableSlot,
   note: '  csengő nem működik  ',
+);
+
+/// An order as the server would return it, for tests that only need one to exist.
+Order sampleOrder({
+  String id = 'order-1',
+  String number = 'ZB-1001',
+  OrderStatus status = OrderStatus.received,
+  PaymentStatus paymentStatus = PaymentStatus.succeeded,
+  DeliverySlot? slot,
+  DateTime? placedAt,
+  String note = '',
+}) => Order(
+  id: id,
+  number: number,
+  placedAt: placedAt ?? fixedNow,
+  lines: const [
+    OrderLine(
+      productId: 'carbonara',
+      name: 'Spagetti carbonara',
+      quantity: 2,
+      unitPrice: Money(2790),
+    ),
+  ],
+  subtotal: const Money(5580),
+  deliveryFee: const Money(990),
+  address: innerAddress,
+  slot: slot ?? bookableSlot,
+  note: note,
+  status: status,
+  paymentStatus: paymentStatus,
 );

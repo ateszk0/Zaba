@@ -1,0 +1,9 @@
+{
+  // The Android download page: one page and the signed APK. A site of its own, so
+  // the web deploys of the app never touch the APK. Built by build-apk.sh.
+  "name": "zaba-apk",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "../../app/build/demo/apk"
+  }
+}

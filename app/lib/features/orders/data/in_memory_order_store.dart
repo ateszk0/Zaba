@@ -54,6 +54,13 @@ class InMemoryOrderStore
     final replay = _idByKey[request.idempotencyKey];
     if (replay != null) return _orders[replay]!;
 
+    final unpaid = _orders.values
+        .where((order) => order.status == OrderStatus.pendingPayment)
+        .length;
+    if (unpaid >= maxUnpaidOrders) {
+      throw const OrderRejectedException(OrderRejection.tooManyUnpaidOrders);
+    }
+
     final lines = {
       for (final entry in request.lines.entries)
         if (entry.value > 0) entry.key: entry.value,

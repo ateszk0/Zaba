@@ -64,9 +64,21 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
       _processing = true;
       _error = null;
     });
-    final status = await ref
-        .read(paymentServiceProvider)
-        .submit(orderId: widget.orderId, outcome: outcome);
+    final PaymentStatus status;
+    try {
+      status = await ref
+          .read(paymentServiceProvider)
+          .submit(orderId: widget.orderId, outcome: outcome);
+    } catch (_) {
+      // A PaymentUnavailableException, or anything else going wrong on the way
+      // (an answer the app cannot read): the form must not stay locked.
+      if (!mounted) return;
+      setState(() {
+        _processing = false;
+        _error = AppLocalizations.of(context).paymentUnavailable;
+      });
+      return;
+    }
     if (!mounted) return;
     if (status == PaymentStatus.succeeded) {
       _openOrder();
@@ -81,9 +93,14 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
 
   Future<void> _cancel() async {
     setState(() => _processing = true);
-    await ref
-        .read(paymentServiceProvider)
-        .submit(orderId: widget.orderId, outcome: CardOutcome.cancelled);
+    try {
+      await ref
+          .read(paymentServiceProvider)
+          .submit(orderId: widget.orderId, outcome: CardOutcome.cancelled);
+    } catch (_) {
+      // The order simply stays waiting for payment; it can be paid from its
+      // page later.
+    }
     if (!mounted) return;
     _openOrder();
   }

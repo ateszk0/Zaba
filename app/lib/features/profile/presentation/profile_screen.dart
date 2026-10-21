@@ -144,7 +144,11 @@ class _AccountCard extends ConsumerWidget {
                         backgroundColor: AppColors.green100,
                         foregroundColor: AppColors.green900,
                         child: Text(
-                          user.displayName.characters.first.toUpperCase(),
+                          // An account without a name or an address must not
+                          // break the screen.
+                          user.displayName.characters.firstOrNull
+                                  ?.toUpperCase() ??
+                              '?',
                         ),
                       ),
                       const SizedBox(width: AppSpacing.md),

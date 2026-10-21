@@ -24,11 +24,20 @@ class PlaceOrderRequest {
   final String note;
 }
 
+/// How many orders one customer may have waiting for payment. A place in a delivery
+/// slot is taken when the order is placed, before it is paid, so the number is
+/// limited (the database enforces the same limit, and cancels orders that stay
+/// unpaid for too long).
+const maxUnpaidOrders = 5;
+
 enum OrderRejection {
   emptyCart,
   outOfDeliveryArea,
   belowMinimumOrder,
   slotUnavailable,
+
+  /// The customer already has [maxUnpaidOrders] orders waiting for payment.
+  tooManyUnpaidOrders,
 }
 
 class OrderRejectedException implements Exception {

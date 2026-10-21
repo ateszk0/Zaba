@@ -1,17 +1,55 @@
 # Zaba's additions to the official Supabase self-hosting stack. It is layered on
 # top of the official docker-compose.yml through COMPOSE_FILE (see install.sh).
 
+# Docker keeps every container's output in a file that is never rotated by default, so a
+# busy server slowly fills its disk. Five files of 10 MB per container is enough to look
+# back over a few days and bounds the whole stack to well under a gigabyte.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
 services:
+  # The official services, only to give them the log limit above.
+  auth:
+    logging: *logging
+  db:
+    logging: *logging
+  imgproxy:
+    logging: *logging
+  meta:
+    logging: *logging
+  realtime:
+    logging: *logging
+  rest:
+    logging: *logging
+  storage:
+    logging: *logging
+  studio:
+    logging: *logging
+
   # The gateway is reachable on this machine only (Studio is behind it, so it
   # must never be public). Everything public goes through Caddy.
   api-gw:
+    logging: *logging
     ports: !override
       - "127.0.0.1:8000:8000/tcp"
 
   # The connection pooler publishes Postgres ports by default; nothing outside
   # the Docker network needs them.
   supavisor:
+    logging: *logging
     ports: !reset []
+
+  # The payment functions need the payment provider's signing secret, which the
+  # installer generates into the stack's .env. Without it they refuse to work.
+  functions:
+    logging: *logging
+    environment:
+      FAKE_PAYMENT_WEBHOOK_SECRET: ${FAKE_PAYMENT_WEBHOOK_SECRET}
+      # The fake card step works only while this is exactly "true" (see install.sh).
+      FAKE_PAYMENTS_ENABLED: ${FAKE_PAYMENTS_ENABLED:-false}
 
   # Serves the web builds and the allow-listed API paths. TLS ends at
   # Cloudflare, so Caddy speaks plain HTTP inside the Docker network.
@@ -19,6 +57,7 @@ services:
     container_name: zaba-caddy
     image: caddy:2.11.7
     restart: unless-stopped
+    logging: *logging
     depends_on:
       api-gw:
         condition: service_healthy
@@ -26,6 +65,9 @@ services:
       ZABA_APP_HOST: ${ZABA_APP_HOST}
       ZABA_API_HOST: ${ZABA_API_HOST}
       ZABA_ADMIN_HOST: ${ZABA_ADMIN_HOST}
+      # Part of the pages' Content-Security-Policy (the API host they may talk to).
+      ZABA_PUBLIC_SCHEME: ${ZABA_PUBLIC_SCHEME:-https}
+      ZABA_PUBLIC_WS_SCHEME: ${ZABA_PUBLIC_WS_SCHEME:-wss}
     ports:
       - "${ZABA_HTTP_BIND:-127.0.0.1}:${ZABA_HTTP_PORT:-8080}:80/tcp"
     volumes:
@@ -43,6 +85,7 @@ services:
     image: cloudflare/cloudflared:2026.10.2
     restart: unless-stopped
     command: tunnel --no-autoupdate run
+    logging: *logging
     environment:
       TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:-}
     depends_on:

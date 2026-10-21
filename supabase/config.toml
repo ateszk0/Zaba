@@ -372,6 +372,21 @@ authorization_url_path = "/oauth/consent"
 # Allow dynamic client registration
 allow_dynamic_registration = false
 
+# Which functions the platform's JWT check protects. The check only understands
+# user tokens and the legacy anon/service keys, not the new publishable and secret
+# keys, and a payment provider has no Supabase token to send at all. So the two
+# functions that are called from outside authenticate themselves: the webhook by
+# the signature of the provider's event, the card step by its signed session.
+# `payments-create` is called as the signed-in customer and keeps the check.
+[functions.payments-create]
+verify_jwt = true
+
+[functions.fake-provider-confirm]
+verify_jwt = false
+
+[functions.payments-webhook]
+verify_jwt = false
+
 [edge_runtime]
 enabled = true
 # Supported request policies: `oneshot`, `per_worker`.
@@ -383,8 +398,9 @@ inspector_port = 8083
 # The Deno major version to use.
 deno_version = 2
 
-# [edge_runtime.secrets]
-# secret_key = "env(SECRET_VALUE)"
+[edge_runtime.secrets]
+FAKE_PAYMENT_WEBHOOK_SECRET = "env(FAKE_PAYMENT_WEBHOOK_SECRET)"
+FAKE_PAYMENTS_ENABLED = "env(FAKE_PAYMENTS_ENABLED)"
 
 [analytics]
 enabled = true

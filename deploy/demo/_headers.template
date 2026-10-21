@@ -1,0 +1,37 @@
+# Headers of the demo's web pages (the customer app and the admin page), served by
+# Cloudflare from the build folder. build-web.sh fills in the two Supabase
+# addresses: that is the only place the pages may connect to.
+
+/*
+  X-Content-Type-Options: nosniff
+  X-Robots-Tag: noindex, nofollow
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' __SUPABASE_HTTP__ __SUPABASE_WS__; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+
+# What starts the app is fetched fresh every time, so a new version reaches people
+# who already have the old one. The rest is checked again after an hour.
+/
+  Cache-Control: no-cache
+/index.html
+  Cache-Control: no-cache
+/flutter_bootstrap.js
+  Cache-Control: no-cache
+/flutter_service_worker.js
+  Cache-Control: no-cache
+/version.json
+  Cache-Control: no-cache
+/manifest.json
+  Cache-Control: no-cache
+/splash.js
+  Cache-Control: no-cache
+/splash.css
+  Cache-Control: no-cache
+/main.dart.js
+  Cache-Control: no-cache
+/assets/*
+  Cache-Control: public, max-age=3600
+/canvaskit/*
+  Cache-Control: public, max-age=86400
+/icons/*
+  Cache-Control: public, max-age=86400

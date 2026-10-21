@@ -71,6 +71,28 @@ void main() {
       },
     );
 
+    test('refuses the order after five that wait for payment, and frees the limit when one is paid or cancelled', () async {
+      final store = newOrderStore();
+      final orders = [
+        for (var i = 0; i < maxUnpaidOrders; i++)
+          await store.placeOrder(validRequest(key: 'unpaid-$i')),
+      ];
+
+      await expectLater(
+        store.placeOrder(validRequest(key: 'one-too-many')),
+        rejectedWith(OrderRejection.tooManyUnpaidOrders),
+      );
+      // A repeated request still gets its order at the limit.
+      expect(
+        (await store.placeOrder(validRequest(key: 'unpaid-0'))).id,
+        orders.first.id,
+      );
+
+      await store.cancelOrder(orders.first.id);
+      final sixth = await store.placeOrder(validRequest(key: 'one-too-many'));
+      expect(sixth.status, OrderStatus.pendingPayment);
+    });
+
     test('rejects an empty cart', () async {
       final store = newOrderStore();
       final request = PlaceOrderRequest(
@@ -123,6 +145,7 @@ void main() {
         lines: const {'carbonara': 2},
         address: innerAddress,
         slot: DeliverySlot(
+          id: 'too-soon',
           start: DateTime(2026, 10, 21, 10),
           end: DateTime(2026, 10, 21, 11),
         ),

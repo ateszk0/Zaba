@@ -19,7 +19,8 @@ insert into auth.users (id, email) values
   ('00000000-0000-4000-8000-00000000000a', 'a@example.test'),
   ('00000000-0000-4000-8000-00000000000b', 'b@example.test'),
   ('00000000-0000-4000-8000-00000000000c', 'operator@example.test'),
-  ('00000000-0000-4000-8000-00000000000d', 'admin@example.test');
+  ('00000000-0000-4000-8000-00000000000d', 'admin@example.test'),
+  ('00000000-0000-4000-8000-00000000000e', 'helper@example.test');
 insert into public.admin_users (user_id, role) values
   ('00000000-0000-4000-8000-00000000000c', 'operator'),
   ('00000000-0000-4000-8000-00000000000d', 'admin');
@@ -27,12 +28,24 @@ insert into public.admin_users (user_id, role) values
 create temp table o (name text primary key, id uuid);
 grant all on o to authenticated, service_role;
 
--- --- setup: customer A places seven orders (2 carbonaras to district V = 6 570 Ft)
+-- --- setup: customer A has seven orders (2 carbonaras to district V = 6 570 Ft)
+-- A customer may have only five orders waiting for payment, so the last two are placed by a
+-- helper customer and handed over to A (this file is about payments, not about that limit).
 select pg_temp.act_as('00000000-0000-4000-8000-00000000000a');
 insert into o (name, id)
 select n, (public.place_order('key-' || n, '[{"product_id":"carbonara","quantity":2}]', '1051', 'Váci utca 12.',
            (select slot_id from public.get_delivery_slots() order by starts_at limit 1)) ->> 'id')::uuid
-  from unnest(array['paid', 'retry', 'abandoned', 'late', 'refund', 'unpaid', 'started']) n;
+  from unnest(array['paid', 'retry', 'abandoned', 'late', 'refund']) n;
+reset role;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000000e');
+insert into o (name, id)
+select n, (public.place_order('key-' || n, '[{"product_id":"carbonara","quantity":2}]', '1051', 'Váci utca 12.',
+           (select slot_id from public.get_delivery_slots() order by starts_at limit 1)) ->> 'id')::uuid
+  from unnest(array['unpaid', 'started']) n;
+reset role;
+update public.orders set user_id = '00000000-0000-4000-8000-00000000000a'
+ where id in (select id from o where name in ('unpaid', 'started'));
+select pg_temp.act_as('00000000-0000-4000-8000-00000000000a');
 
 -- --- payment attempts ------------------------------------------------------
 create temp table attempt (name text primary key, payment_id uuid);
