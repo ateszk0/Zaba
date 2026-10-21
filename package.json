@@ -1,0 +1,8 @@
+{
+  "name": "zaba",
+  "private": true,
+  "description": "Tooling for the Zaba repository (Supabase CLI). The app itself is Flutter, see app/.",
+  "devDependencies": {
+    "supabase": "2.121.0"
+  }
+}
