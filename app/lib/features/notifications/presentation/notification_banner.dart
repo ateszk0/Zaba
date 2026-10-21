@@ -76,58 +76,61 @@ class _Strip extends ConsumerWidget {
     final (background, foreground) = notification.status.colors;
     final notifications = ref.read(notificationsProvider.notifier);
 
-    return Semantics(
-      liveRegion: true,
-      child: Material(
-        color: background,
-        child: InkWell(
-          onTap: () {
-            notifications.dismissBanner();
-            ref.read(routerProvider).go('/orders/${notification.orderId}');
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.sm,
-            ),
-            child: Row(
-              children: [
-                Icon(notification.status.icon, color: foreground),
-                const SizedBox(width: AppSpacing.sm + 4),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        notification.title(l10n),
-                        style: textTheme.titleSmall?.copyWith(
-                          color: foreground,
+    return SafeArea(
+      bottom: false,
+      child: Semantics(
+        liveRegion: true,
+        child: Material(
+          color: background,
+          child: InkWell(
+            onTap: () {
+              notifications.dismissBanner();
+              ref.read(routerProvider).go('/orders/${notification.orderId}');
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
+              child: Row(
+                children: [
+                  Icon(notification.status.icon, color: foreground),
+                  const SizedBox(width: AppSpacing.sm + 4),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          notification.title(l10n),
+                          style: textTheme.titleSmall?.copyWith(
+                            color: foreground,
+                          ),
                         ),
-                      ),
-                      Text(
-                        '${l10n.notificationOrder(notification.orderNumber)} · ${notification.body(l10n)}',
-                        style: textTheme.bodySmall?.copyWith(
-                          color: AppColors.ink,
+                        Text(
+                          '${l10n.notificationOrder(notification.orderNumber)} · ${notification.body(l10n)}',
+                          style: textTheme.bodySmall?.copyWith(
+                            color: AppColors.ink,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                // No tooltip: the banner sits above the app's Navigator, so there
-                // is no Overlay for a tooltip to open in. The label is for screen
-                // readers.
-                Semantics(
-                  label: l10n.notificationDismiss,
-                  button: true,
-                  excludeSemantics: true,
-                  child: IconButton(
-                    icon: Icon(Icons.close_rounded, color: foreground),
-                    onPressed: notifications.dismissBanner,
+                  // No tooltip: the banner sits above the app's Navigator, so there
+                  // is no Overlay for a tooltip to open in. The label is for screen
+                  // readers.
+                  Semantics(
+                    label: l10n.notificationDismiss,
+                    button: true,
+                    excludeSemantics: true,
+                    child: IconButton(
+                      icon: Icon(Icons.close_rounded, color: foreground),
+                      onPressed: notifications.dismissBanner,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

@@ -4,8 +4,6 @@
   "appTitle": "Zaba",
   "@appTitle": { "description": "Application name shown in the OS task switcher and app bars." },
 
-  "demoBanner": "DEMÓ · kitalált adatok, nem valódi rendelés",
-  "@demoBanner": { "description": "Permanent strip at the top of every screen so nobody mistakes the demo for the real service." },
 
   "navMenu": "Étlap",
   "navCart": "Kosár",
@@ -261,7 +259,6 @@
   "notifCancelledRefundedBody": "A rendelés lemondva, a kifizetett összeget visszatérítjük.",
 
   "adminTitle": "Zaba kezelőfelület",
-  "adminBanner": "DEMÓ · kezelőfelület · kitalált adatok",
   "adminLoginTitle": "Munkatársi belépés",
   "adminLoginBody": "A konyha és az üzemeltetés munkatársainak.",
   "adminDemoLogin": "Belépés demó munkatársként",

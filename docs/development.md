@@ -423,13 +423,13 @@ Az admin oldal indítása (`flutter build web -t lib/main_admin.dart`). Külön 
 
 | Név | Mi ez | Leírás |
 |---|---|---|
-| `ZabaApp` | `ConsumerWidget` | A vásárlói app gyökere: `MaterialApp.router` a `routerProvider`-rel, a világos témával, magyar nyelvvel. Két szolgáltatót figyel, hogy éljenek: a `cartPruningProvider`-t (a kosár megtisztítása az étlaphoz) és az `orderNotificationsProvider`-t (értesítések a rendelések változásaiból). A `DemoFrame` fölé teszi a demó-szalagot, alá az értesítéssávot (`NotificationBanner`) |
+| `ZabaApp` | `ConsumerWidget` | A vásárlói app gyökere: `MaterialApp.router` a `routerProvider`-rel, a világos témával, magyar nyelvvel. Két szolgáltatót figyel, hogy éljenek: a `cartPruningProvider`-t (a kosár megtisztítása az étlaphoz) és az `orderNotificationsProvider`-t (értesítések a rendelések változásaiból). Az `AppFrame` tetejére teszi az értesítéssávot (`NotificationBanner`) |
 
 #### app/lib/admin_app.dart
 
 | Név | Mi ez | Leírás |
 |---|---|---|
-| `AdminApp` | `ConsumerWidget` | Az admin oldal gyökere: ugyanaz a téma és nyelv, az `adminRouterProvider` útvonalaival, a szalagon az "admin" felirattal |
+| `AdminApp` | `ConsumerWidget` | Az admin oldal gyökere: ugyanaz a téma és nyelv, az `adminRouterProvider` útvonalaival |
 
 ### 4.2 Közös alapok (`lib/core/`)
 
@@ -562,16 +562,13 @@ Az élő frissítés magja. A képernyők, amelyek a rendelések változását k
 | `AppTheme` | `abstract final class` | |
 | `AppTheme.light()` | metódus | A `ThemeData`: Material 3, a `ColorScheme` az `AppColors`-ból, és az összes komponens (gombok, mezők, chip, navigációs sáv, snackbar, dialógus, kereső, szegmentált gomb, alsó lap, jelvény) egységesen formázva |
 
-#### app/lib/core/widgets/demo_banner.dart
+#### app/lib/core/widgets/app_frame.dart
 
 | Név | Mi ez | Leírás |
 |---|---|---|
-| `DemoBanner` | `StatelessWidget` | Állandó piros szalag minden képernyő fölött, hogy a demót senki ne tévessze össze az éles szolgáltatással. Ő kezeli a felső biztonságos területet (kamera-bevágás, állapotsor), ezért az alatta lévő képernyők nem tehetik hozzá a sajátjukat |
-| `DemoBanner.label` | mező | A felirat; ha `null`, a vásárlói app demó-szövege |
-| `DemoFrame` | `StatelessWidget` | A szalagot az app fölé teszi, és a tartalomról leveszi a felső behúzást |
-| `DemoFrame.child` | mező | Az app |
-| `DemoFrame.label` | mező | A szalag felirata (az admin oldal "admin" feliratot ad) |
-| `DemoFrame.below` | mező | A szalag és az app közé kerülő elem (az értesítéssáv) |
+| `AppFrame` | `StatelessWidget` | Az app fölé teszi a `below` elemet (az értesítéssávot), alatta az app. Nincs állandó szalag |
+| `AppFrame.child` | mező | Az app |
+| `AppFrame.below` | mező | A fölé kerülő elem (értesítés); a sáv a státuszsor alatt ül |
 
 #### app/lib/core/widgets/failure_box.dart
 

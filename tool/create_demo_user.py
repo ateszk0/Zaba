@@ -25,7 +25,7 @@ import urllib.request
 
 LOCAL_DEMO_EMAIL = "demo@zaba.example"
 LOCAL_DEMO_PASSWORD = "Demo-jelszo-1"
-FULL_NAME = "Demó Dóra"
+FULL_NAME = os.environ.get("DEMO_NAME", "Demó Dóra")
 
 
 def load_config():

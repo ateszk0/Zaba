@@ -19,10 +19,10 @@ void main() {
     matching: find.text(label),
   );
 
-  testWidgets('shows the DEMÓ banner and the four tabs', (tester) async {
+  testWidgets('shows the four tabs', (tester) async {
     await pumpApp(tester);
 
-    expect(find.textContaining('DEMÓ'), findsOneWidget);
+    expect(find.textContaining('DEMÓ'), findsNothing);
     for (final label in ['Étlap', 'Kosár', 'Rendeléseim', 'Profil']) {
       expect(tab(label), findsOneWidget);
     }

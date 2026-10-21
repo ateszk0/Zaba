@@ -100,12 +100,6 @@ abstract class AppLocalizations {
   /// **'Zaba'**
   String get appTitle;
 
-  /// Permanent strip at the top of every screen so nobody mistakes the demo for the real service.
-  ///
-  /// In hu, this message translates to:
-  /// **'DEMÓ · kitalált adatok, nem valódi rendelés'**
-  String get demoBanner;
-
   /// No description provided for @navMenu.
   ///
   /// In hu, this message translates to:
@@ -1377,12 +1371,6 @@ abstract class AppLocalizations {
   /// In hu, this message translates to:
   /// **'Zaba kezelőfelület'**
   String get adminTitle;
-
-  /// No description provided for @adminBanner.
-  ///
-  /// In hu, this message translates to:
-  /// **'DEMÓ · kezelőfelület · kitalált adatok'**
-  String get adminBanner;
 
   /// No description provided for @adminLoginTitle.
   ///

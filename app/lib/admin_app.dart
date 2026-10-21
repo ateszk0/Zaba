@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/theme/app_theme.dart';
-import 'core/widgets/demo_banner.dart';
+import 'core/widgets/app_frame.dart';
 import 'features/admin/admin_router.dart';
 import 'l10n/generated/app_localizations.dart';
 
@@ -20,10 +20,7 @@ class AdminApp extends ConsumerWidget {
       locale: const Locale('hu'),
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
-      builder: (context, child) => DemoFrame(
-        label: AppLocalizations.of(context).adminBanner,
-        child: child!,
-      ),
+      builder: (context, child) => AppFrame(child: child!),
     );
   }
 }

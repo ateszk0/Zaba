@@ -64,10 +64,7 @@ void main() {
         await pumpAdmin(tester, admin: kitchen());
 
         expect(find.text('Munkatársi belépés'), findsOneWidget);
-        expect(
-          find.text('DEMÓ · kezelőfelület · kitalált adatok'),
-          findsOneWidget,
-        );
+        expect(find.textContaining('DEMÓ'), findsNothing);
         // No registration and no demo button unless the build has one.
         expect(find.textContaining('Regisztr'), findsNothing);
         expect(find.text('Belépés demó munkatársként'), findsNothing);

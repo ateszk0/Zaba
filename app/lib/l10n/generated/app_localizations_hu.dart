@@ -13,9 +13,6 @@ class AppLocalizationsHu extends AppLocalizations {
   String get appTitle => 'Zaba';
 
   @override
-  String get demoBanner => 'DEMÓ · kitalált adatok, nem valódi rendelés';
-
-  @override
   String get navMenu => 'Étlap';
 
   @override
@@ -734,9 +731,6 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get adminTitle => 'Zaba kezelőfelület';
-
-  @override
-  String get adminBanner => 'DEMÓ · kezelőfelület · kitalált adatok';
 
   @override
   String get adminLoginTitle => 'Munkatársi belépés';
