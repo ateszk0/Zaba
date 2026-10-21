@@ -60,7 +60,7 @@ def post(path, body):
         headers={"apikey": KEY, "Content-Type": "application/json"},
     )
     try:
-        with urllib.request.urlopen(request) as response:
+        with urllib.request.urlopen(request, timeout=30) as response:
             return response.status, json.loads(response.read().decode() or "null")
     except urllib.error.HTTPError as error:
         text = error.read().decode()

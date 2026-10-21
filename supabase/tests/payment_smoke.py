@@ -131,6 +131,13 @@ def deliver(body, header, token=None, key=None):
     return call("POST", "/functions/v1/payments-webhook", key, token, raw=body, headers=headers)
 
 
+# The fake payment flow answers 503 `fake_payments_disabled` unless FAKE_PAYMENTS_ENABLED=true is set
+# in the functions' environment. Say so, instead of letting every check below fail on it.
+status, answer = call("POST", "/functions/v1/payments-create", PUBLISHABLE, raw="{}")
+if status == 503 and (answer or {}).get("error") == "fake_payments_disabled":
+    sys.exit("The fake payment flow is switched off. Set FAKE_PAYMENTS_ENABLED=true in supabase/.env "
+             "(local stack) or in the stack's .env (self-hosted), restart the functions, and run again.")
+
 token = sign_up()
 other = sign_up()
 status, slots = rpc("get_delivery_slots", PUBLISHABLE, token)

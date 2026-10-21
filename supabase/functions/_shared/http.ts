@@ -67,4 +67,58 @@ export function restHeaders(key: string, extra: Record<string, string> = {}): Re
   };
 }
 
+/** The largest request body the functions read. Their bodies are a few hundred bytes. */
+export const MAX_BODY_BYTES = 10_000;
+
+/**
+ * The text of a request body, or null if it is larger than [maxBytes]. The declared size
+ * is checked first, and the body is then read piece by piece and given up as soon as it
+ * goes over, so a request with a huge or a lying body never gets into memory whole.
+ */
+export async function readTextLimited(req: Request, maxBytes = MAX_BODY_BYTES): Promise<string | null> {
+  const declared = Number(req.headers.get('content-length'));
+  if (Number.isFinite(declared) && declared > maxBytes) {
+    return null;
+  }
+  if (!req.body) {
+    return '';
+  }
+  const reader = req.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) {
+      break;
+    }
+    size += value.byteLength;
+    if (size > maxBytes) {
+      await reader.cancel();
+      return null;
+    }
+    chunks.push(value);
+  }
+  const bytes = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return new TextDecoder().decode(bytes);
+}
+
+/** The body as a JSON object, or null if it is too large, not JSON, or not an object. */
+export async function readJsonBody(req: Request, maxBytes = MAX_BODY_BYTES): Promise<Record<string, unknown> | null> {
+  const text = await readTextLimited(req, maxBytes);
+  if (text === null) {
+    return null;
+  }
+  try {
+    const value: unknown = JSON.parse(text);
+    return typeof value === 'object' && value !== null && !Array.isArray(value) ? value as Record<string, unknown> : null;
+  } catch {
+    return null;
+  }
+}
+
 export const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;

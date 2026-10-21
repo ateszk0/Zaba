@@ -43,7 +43,8 @@ echo "==> Payment secret"
 secret_file="$(mktemp)"
 trap 'rm -f "$secret_file"' EXIT
 chmod 600 "$secret_file"
-printf 'FAKE_PAYMENT_WEBHOOK_SECRET=%s\n' "$FAKE_PAYMENT_WEBHOOK_SECRET" > "$secret_file"
+# The demo's fake card step must be switched on explicitly; for a real shop leave it "false".
+printf 'FAKE_PAYMENT_WEBHOOK_SECRET=%s\nFAKE_PAYMENTS_ENABLED=%s\n' "$FAKE_PAYMENT_WEBHOOK_SECRET" "${FAKE_PAYMENTS_ENABLED:-true}" > "$secret_file"
 supabase secrets set --project-ref "$SUPABASE_PROJECT_REF" --env-file "$secret_file"
 
 echo "==> Edge Functions"

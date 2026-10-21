@@ -4,7 +4,8 @@
 // function only passes the customer's identity on and adds the provider session.
 
 import { FakePaymentProvider } from '../_shared/payments/fake_provider.ts';
-import { apiKey, json, preflight, readEnv, restHeaders, UUID } from '../_shared/http.ts';
+import { fakePaymentsEnabled } from '../_shared/flags.ts';
+import { apiKey, json, preflight, readEnv, readJsonBody, restHeaders, UUID } from '../_shared/http.ts';
 
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
@@ -12,6 +13,10 @@ Deno.serve(async (req: Request) => {
   }
   if (req.method !== 'POST') {
     return json({ error: 'method_not_allowed' }, 405);
+  }
+  if (!fakePaymentsEnabled(Deno.env.get('FAKE_PAYMENTS_ENABLED'))) {
+    // The only payment provider yet is the demo's; see _shared/flags.ts.
+    return json({ error: 'fake_payments_disabled' }, 503);
   }
   const env = readEnv('payments-create', ['SUPABASE_URL', 'FAKE_PAYMENT_WEBHOOK_SECRET']);
   const publishableKey = apiKey('payments-create', 'publishable');
@@ -23,12 +28,8 @@ Deno.serve(async (req: Request) => {
     return json({ error: 'not_authenticated' }, 401);
   }
 
-  let orderId: unknown;
-  try {
-    orderId = (await req.json()).order_id;
-  } catch {
-    return json({ error: 'invalid_request' }, 400);
-  }
+  const body = await readJsonBody(req);
+  const orderId = body?.order_id;
   if (typeof orderId !== 'string' || !UUID.test(orderId)) {
     return json({ error: 'invalid_request' }, 400);
   }

@@ -56,7 +56,7 @@ select is(
   concat_ws(
     E'\n',
     'pending_payment > received by payment',
-    'pending_payment > cancelled by customer+operator',
+    'pending_payment > cancelled by customer+operator+payment',
     'received > preparing by operator',
     'received > cancelled by customer+operator',
     'preparing > out_for_delivery by operator',

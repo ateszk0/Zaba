@@ -7,14 +7,15 @@
 
 import { FakePaymentProvider, InvalidSessionError } from '../_shared/payments/fake_provider.ts';
 import type { PaymentOutcome } from '../_shared/payments/provider.ts';
-import { json, preflight, readEnv } from '../_shared/http.ts';
+import { fakePaymentsEnabled } from '../_shared/flags.ts';
+import { json, preflight, readEnv, readJsonBody } from '../_shared/http.ts';
 
-/** What the fake card page can report. */
-const OUTCOMES: Record<string, PaymentOutcome> = {
-  approved: 'succeeded',
-  declined: 'failed',
-  cancelled: 'cancelled',
-};
+/** What the fake card page can report. (A Map: an object would also "know" constructor and toString.) */
+const OUTCOMES = new Map<string, PaymentOutcome>([
+  ['approved', 'succeeded'],
+  ['declined', 'failed'],
+  ['cancelled', 'cancelled'],
+]);
 
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
@@ -23,20 +24,18 @@ Deno.serve(async (req: Request) => {
   if (req.method !== 'POST') {
     return json({ error: 'method_not_allowed' }, 405);
   }
+  if (!fakePaymentsEnabled(Deno.env.get('FAKE_PAYMENTS_ENABLED'))) {
+    // This function lets the app itself say that a card was approved: demo only.
+    return json({ error: 'fake_payments_disabled' }, 503);
+  }
   const env = readEnv('fake-provider-confirm', ['SUPABASE_URL', 'FAKE_PAYMENT_WEBHOOK_SECRET']);
   if (!env) {
     return json({ error: 'not_configured' }, 500);
   }
 
-  let sessionToken: unknown;
-  let outcome: PaymentOutcome | undefined;
-  try {
-    const body = await req.json();
-    sessionToken = body.session_token;
-    outcome = typeof body.outcome === 'string' ? OUTCOMES[body.outcome] : undefined;
-  } catch {
-    return json({ error: 'invalid_request' }, 400);
-  }
+  const input = await readJsonBody(req);
+  const sessionToken = input?.session_token;
+  const outcome = typeof input?.outcome === 'string' ? OUTCOMES.get(input.outcome) : undefined;
   if (typeof sessionToken !== 'string' || outcome === undefined) {
     return json({ error: 'invalid_request' }, 400);
   }

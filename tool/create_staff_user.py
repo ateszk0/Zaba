@@ -60,7 +60,7 @@ def request(method, path, key, body=None, token=None, extra=None):
     data = json.dumps(body).encode() if body is not None else None
     req = urllib.request.Request(f"{API}{path}", data=data, method=method, headers=headers)
     try:
-        with urllib.request.urlopen(req) as response:
+        with urllib.request.urlopen(req, timeout=30) as response:
             text = response.read().decode()
             return response.status, (json.loads(text) if text else None)
     except urllib.error.HTTPError as error:
@@ -71,16 +71,26 @@ def request(method, path, key, body=None, token=None, extra=None):
             return error.code, {"raw": text[:200]}
 
 
-status, session = request("POST", "/auth/v1/signup", PUBLISHABLE, {"email": EMAIL, "password": PASSWORD, "data": {"full_name": f"Munkatárs ({args.role})"}})
-if status == 200 and "access_token" in (session or {}):
-    print(f"created the account {EMAIL}")
-elif (session or {}).get("error_code") in ("user_already_exists", "email_exists"):
-    status, session = request("POST", "/auth/v1/token?grant_type=password", PUBLISHABLE, {"email": EMAIL, "password": PASSWORD})
-    if status != 200:
-        sys.exit(f"The account {EMAIL} exists, but with a different password.")
+# An account that already exists is only promoted: signing in with its password proves the
+# person running this knows it, and gives the id the staff row needs.
+status, session = request("POST", "/auth/v1/token?grant_type=password", PUBLISHABLE, {"email": EMAIL, "password": PASSWORD})
+if status == 200:
     print(f"the account {EMAIL} already exists, password matches")
 else:
-    sys.exit(f"Could not create the account: HTTP {status} {(session or {}).get('error_code') or (session or {}).get('msg') or session}")
+    status, session = request("POST", "/auth/v1/signup", PUBLISHABLE, {"email": EMAIL, "password": PASSWORD, "data": {"full_name": f"Munkatárs ({args.role})"}})
+    if status == 200 and "access_token" in (session or {}):
+        print(f"created the account {EMAIL}")
+    elif (session or {}).get("error_code") in ("user_already_exists", "email_exists"):
+        sys.exit(f"The account {EMAIL} exists, but with a different password.")
+    elif status == 200:
+        sys.exit(f"The project wants the e-mail address confirmed first, so the account {EMAIL} cannot sign in yet. "
+                 "Confirm it (or create the user in the dashboard: Authentication, Users, Add user, with Auto Confirm), "
+                 "then run this tool again to give it the role.")
+    elif (session or {}).get("error_code") in ("signup_disabled", "email_provider_disabled"):
+        sys.exit("Sign-up is switched off on this project. Create the user in the dashboard (Authentication, Users, "
+                 f"Add user, with Auto Confirm) as {EMAIL}, then run this tool again to give it the role.")
+    else:
+        sys.exit(f"Could not create the account: HTTP {status} {(session or {}).get('error_code') or (session or {}).get('msg') or session}")
 
 user_id = session["user"]["id"]
 status, body = request(

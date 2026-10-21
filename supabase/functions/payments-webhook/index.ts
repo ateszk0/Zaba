@@ -8,9 +8,7 @@
 
 import { FakePaymentProvider } from '../_shared/payments/fake_provider.ts';
 import { WebhookVerificationError } from '../_shared/payments/provider.ts';
-import { apiKey, json, readEnv, restHeaders } from '../_shared/http.ts';
-
-const MAX_BODY_BYTES = 10_000;
+import { apiKey, json, readEnv, readTextLimited, restHeaders } from '../_shared/http.ts';
 
 Deno.serve(async (req: Request) => {
   if (req.method !== 'POST') {
@@ -22,8 +20,8 @@ Deno.serve(async (req: Request) => {
     return json({ error: 'not_configured' }, 500);
   }
 
-  const rawBody = await req.text();
-  if (rawBody.length > MAX_BODY_BYTES) {
+  const rawBody = await readTextLimited(req);
+  if (rawBody === null) {
     return json({ error: 'invalid_webhook' }, 413);
   }
 

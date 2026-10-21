@@ -102,9 +102,14 @@ set_env ENABLE_PHONE_AUTOCONFIRM false
 if ! grep -q '^FAKE_PAYMENT_WEBHOOK_SECRET=.' .env; then
   set_env FAKE_PAYMENT_WEBHOOK_SECRET "$(openssl rand -hex 32)"
 fi
+# The demo's fake card step is allowed on a fresh stack (this kit is the demo's staging). A
+# server that takes real payments sets it to false in .env, and this line then leaves it alone.
+grep -q '^FAKE_PAYMENTS_ENABLED=' .env || set_env FAKE_PAYMENTS_ENABLED true
 set_env ZABA_APP_HOST "$ZABA_APP_HOST"
 set_env ZABA_API_HOST "$ZABA_API_HOST"
 set_env ZABA_ADMIN_HOST "$ZABA_ADMIN_HOST"
+set_env ZABA_PUBLIC_SCHEME "$scheme"
+set_env ZABA_PUBLIC_WS_SCHEME "$([ "$scheme" = https ] && echo wss || echo ws)"
 set_env ZABA_HTTP_BIND "${ZABA_HTTP_BIND:-127.0.0.1}"
 set_env ZABA_HTTP_PORT "${ZABA_HTTP_PORT:-8080}"
 set_env CLOUDFLARE_TUNNEL_TOKEN "${CLOUDFLARE_TUNNEL_TOKEN:-}"
@@ -163,6 +168,9 @@ fi
 say "Database: migrations and seed data"
 "$here/migrate.sh"
 "$here/seed.sh"
+
+say "Scheduled jobs (unpaid orders expire)"
+"$here/schedule.sh"
 
 anon_key="$(grep '^ANON_KEY=' .env | cut -d= -f2-)"
 cat <<EOF

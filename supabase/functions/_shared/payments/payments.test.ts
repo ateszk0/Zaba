@@ -137,3 +137,16 @@ test('the webhook refuses unsigned, tampered, foreign, stale and malformed event
     await assert.rejects(provider.verifyWebhook(bad, header), WebhookVerificationError, bad);
   }
 });
+
+test('an event type that every object "knows" is not an event type', async () => {
+  for (const type of ['constructor', 'toString', '__proto__', 'hasOwnProperty']) {
+    const body = JSON.stringify({ id: 'evt_1', type, created: NOW, data: { order_id: ORDER, payment_id: PAYMENT } });
+    const provider = new FakePaymentProvider(SECRET, () => NOW);
+    const header = await signPayload(SECRET, body, NOW);
+    await assert.rejects(provider.verifyWebhook(body, header), (error: unknown) => {
+      assert.ok(error instanceof WebhookVerificationError);
+      assert.equal(error.reason, 'event');
+      return true;
+    }, `${type} must be refused`);
+  }
+});

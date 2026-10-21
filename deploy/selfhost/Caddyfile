@@ -7,15 +7,26 @@
 	admin off
 }
 
+# The pages may only load their own files and talk to the API host: the same rules as the
+# demo's _headers file (deploy/demo/_headers.template), written once here for both web hosts.
+# ZABA_PUBLIC_SCHEME is http or https and ZABA_PUBLIC_WS_SCHEME ws or wss (install.sh sets both).
+# `:*` is any port of the API host: https on the internet has only 443, but a test on the local
+# network reaches the same host on another port (the host is what the policy pins down).
+(web_security) {
+	header {
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' {$ZABA_PUBLIC_SCHEME}://{$ZABA_API_HOST}:* {$ZABA_PUBLIC_WS_SCHEME}://{$ZABA_API_HOST}:*; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+		X-Content-Type-Options nosniff
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+		X-Robots-Tag "noindex, nofollow"
+	}
+}
+
 # The customer app (Flutter web build).
 http://{$ZABA_APP_HOST} {
 	encode zstd gzip
+	import web_security
 
-	header {
-		X-Content-Type-Options nosniff
-		Referrer-Policy strict-origin-when-cross-origin
-		Permissions-Policy "camera=(), microphone=(), geolocation=()"
-	}
+	header Referrer-Policy strict-origin-when-cross-origin
 
 	# For monitoring. It has its own block because `try_files` below rewrites
 	# every path, and would otherwise turn this into the app's index page.
@@ -28,7 +39,7 @@ http://{$ZABA_APP_HOST} {
 
 		# The loader and the service worker must always be fetched fresh, or a
 		# new deploy would not reach people who already have the app.
-		@fresh path / /index.html /flutter_bootstrap.js /flutter_service_worker.js /version.json /manifest.json
+		@fresh path / /index.html /flutter_bootstrap.js /flutter_service_worker.js /version.json /manifest.json /splash.js /splash.css /main.dart.js
 		header @fresh Cache-Control "no-cache"
 
 		# Client-side routes such as /menu fall back to the app. A missing file
@@ -43,13 +54,13 @@ http://{$ZABA_APP_HOST} {
 	}
 }
 
-# The admin page (Flutter web build, added in a later step).
+# The admin page (Flutter web build, a second entry point of the same project).
 http://{$ZABA_ADMIN_HOST} {
 	root * /srv/admin
 	encode zstd gzip
+	import web_security
 
 	header {
-		X-Content-Type-Options nosniff
 		Referrer-Policy no-referrer
 		X-Frame-Options DENY
 		Cache-Control "no-cache"
@@ -63,11 +74,13 @@ http://{$ZABA_ADMIN_HOST} {
 	file_server
 }
 
-# The Supabase API. Only the API paths are passed on: Studio (the dashboard)
-# and the Postgres meta API live behind the same gateway and must NOT be
-# reachable from the internet, so every other path is a plain 404.
+# The Supabase API. Only the paths the app uses are passed on: Studio (the dashboard) and
+# the Postgres meta API live behind the same gateway and must NOT be reachable from the
+# internet, so every other path is a plain 404. Storage (/storage/v1/*) is left out on
+# purpose: the app does not use it yet (product images ship inside the app). Add it back
+# here when the MVP starts to store files.
 http://{$ZABA_API_HOST} {
-	@api path /rest/v1/* /auth/v1/* /realtime/v1/* /storage/v1/* /functions/v1/*
+	@api path /rest/v1/* /auth/v1/* /realtime/v1/* /functions/v1/*
 
 	handle @api {
 		# WebSocket upgrades (Realtime) are proxied automatically.
@@ -77,4 +90,11 @@ http://{$ZABA_API_HOST} {
 	handle {
 		respond "Not found" 404
 	}
+}
+
+# Any other host name that reaches the server (a scanner using the server's address, a
+# misconfigured DNS record) gets a 404, not Caddy's empty 200 that a monitor would take
+# for a working site.
+http:// {
+	respond "Not found" 404
 }

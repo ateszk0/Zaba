@@ -12,11 +12,13 @@ import type { PaymentOutcome, PaymentProvider, PaymentSession, ProviderEvent } f
 
 const SESSION_TTL_SEC = 30 * 60;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
-const EVENT_TYPES: Record<string, PaymentOutcome> = {
-  'payment.succeeded': 'succeeded',
-  'payment.failed': 'failed',
-  'payment.cancelled': 'cancelled',
-};
+// A Map, not an object: a lookup in an object also finds what every object has
+// ("constructor", "toString"), which is not an event type.
+const EVENT_TYPES = new Map<string, PaymentOutcome>([
+  ['payment.succeeded', 'succeeded'],
+  ['payment.failed', 'failed'],
+  ['payment.cancelled', 'cancelled'],
+]);
 
 export class InvalidSessionError extends Error {
   constructor(reason: string) {
@@ -122,7 +124,7 @@ export class FakePaymentProvider implements PaymentProvider {
       throw new WebhookVerificationError('body');
     }
     const data = event.data as Record<string, unknown> | undefined;
-    const outcome = typeof event.type === 'string' ? EVENT_TYPES[event.type] : undefined;
+    const outcome = typeof event.type === 'string' ? EVENT_TYPES.get(event.type) : undefined;
     if (
       typeof event.id !== 'string' || event.id.length < 1 || event.id.length > 100 ||
       outcome === undefined || !data ||
