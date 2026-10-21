@@ -13,6 +13,7 @@ import '../../orders/application/order_providers.dart';
 import '../../orders/domain/order.dart';
 import '../../orders/domain/order_status.dart';
 import '../application/payment_providers.dart';
+import '../domain/payment_service.dart';
 import '../domain/card_outcome.dart';
 import '../domain/card_validation.dart';
 import 'card_input_formatters.dart';
@@ -64,9 +65,19 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
       _processing = true;
       _error = null;
     });
-    final status = await ref
-        .read(paymentServiceProvider)
-        .submit(orderId: widget.orderId, outcome: outcome);
+    final PaymentStatus status;
+    try {
+      status = await ref
+          .read(paymentServiceProvider)
+          .submit(orderId: widget.orderId, outcome: outcome);
+    } on PaymentUnavailableException {
+      if (!mounted) return;
+      setState(() {
+        _processing = false;
+        _error = AppLocalizations.of(context).paymentUnavailable;
+      });
+      return;
+    }
     if (!mounted) return;
     if (status == PaymentStatus.succeeded) {
       _openOrder();
@@ -81,9 +92,14 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
 
   Future<void> _cancel() async {
     setState(() => _processing = true);
-    await ref
-        .read(paymentServiceProvider)
-        .submit(orderId: widget.orderId, outcome: CardOutcome.cancelled);
+    try {
+      await ref
+          .read(paymentServiceProvider)
+          .submit(orderId: widget.orderId, outcome: CardOutcome.cancelled);
+    } on PaymentUnavailableException {
+      // The order simply stays waiting for payment; it can be paid from its
+      // page later.
+    }
     if (!mounted) return;
     _openOrder();
   }

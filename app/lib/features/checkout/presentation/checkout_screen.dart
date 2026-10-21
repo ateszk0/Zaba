@@ -85,6 +85,14 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           OrderRejection.slotUnavailable => l10n.orderErrorSlotUnavailable,
         };
       });
+    } on Exception {
+      // The network or the server: nothing was placed (or, if the answer was
+      // lost on the way, the same key returns that order on the next try).
+      if (!mounted) return;
+      setState(() {
+        _submitting = false;
+        _error = l10n.orderErrorGeneric;
+      });
     }
   }
 

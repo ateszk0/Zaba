@@ -107,10 +107,10 @@ Semmilyen állapotváltoztató adat nem írható közvetlenül a kliensről: a t
 | Fizetési kísérlet indítása | `start_payment` | a rendelés tulajdonosa |
 | Rendelés lemondása | `cancel_order` | a rendelés tulajdonosa, amíg az állapotgép engedi |
 | Állapot léptetése | `admin_set_order_status` | munkatárs (`admin`, `operator`), naplózva |
-| Fizetési esemény feldolgozása (idempotens) | `apply_payment_event` | **csak a service role** (webhook-kezelő) |
+| Fizetési esemény feldolgozása (idempotens, csak nyitott és egyező fizetési kísérletre) | `apply_payment_event` | **csak a service role** (webhook-kezelő), lásd [`payment-flow.md`](payment-flow.md) |
 
-Olvasás: a katalógus és a szállítási feltételek nyilvánosak; a vásárló csak a saját profilját, címeit és rendeléseit látja; a
-munkatárs minden rendelést; az audit naplót csak az `admin` szerepkör. Minden tábla RLS-sel védett, és a jogosultságok alapból zártak.
+Olvasás: a katalógus és a szállítási feltételek nyilvánosak; a vásárló csak a saját profilját, címeit és rendeléseit látja (a
+rendelés idősávjának idejét is, a kapacitását nem); a munkatárs minden rendelést; az audit naplót csak az `admin` szerepkör. Minden tábla RLS-sel védett, és a jogosultságok alapból zártak.
 
 ## Pénz és idő
 

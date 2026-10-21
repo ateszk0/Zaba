@@ -141,6 +141,7 @@
   "paymentCancel": "Mégse",
   "paymentProcessing": "Fizetés feldolgozása…",
   "paymentDeclined": "A kártyádat elutasították. Próbálj meg másik kártyát.",
+  "paymentUnavailable": "A fizetést most nem sikerült elindítani. Ellenőrizd a kapcsolatot, és próbáld újra.",
   "paymentErrorCardNumber": "Érvénytelen kártyaszám.",
   "paymentErrorExpiry": "Érvénytelen lejárati dátum.",
   "paymentErrorCvc": "3 jegyű biztonsági kód kell.",

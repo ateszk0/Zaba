@@ -147,6 +147,32 @@ Kivitelezés és runbook: [`deploy/selfhost/`](../deploy/selfhost/README.md).
 - A rendelés még a memóriabeli tárba kerül, ezért az idősáv foglalása sem a szerveren történik; a következő lépés (rendelés és fizetés a szerveren) ezt megszünteti. A pénztár addig is a szerver árazását és idősávjait használja, ezért belépés kell hozzá.
 - A cím nincs mentve (újratöltés után újra meg kell adni); a mentett címek az MVP-ben jönnek.
 
+## Rendelés és fizetés (f lépés)
+
+A teljes folyamat és a sorozatdiagram: [`payment-flow.md`](payment-flow.md).
+
+| Téma | Döntés | Miért |
+|---|---|---|
+| Ki fizet | A rendelést csak a szolgáltató aláírt eseménye teheti kifizetetté (`payments-webhook` → `apply_payment_event`); az app nem ír rendelést | A brief szerint a szolgáltató eseménye az egyetlen igazságforrás |
+| Szolgáltató | `PaymentProvider` interfész TypeScriptben, a demóban `FakePaymentProvider`; a `fake-provider-confirm` a szolgáltató "háttere" | Éles szolgáltatóra váltáskor egy új osztály kell, a rendelési logika nem változik |
+| Függőségek | A függvények nem importálnak semmit távolról, a Supabase-et sima `fetch`-csel (PostgREST) hívják; a közös kód csak Web API-t használ | Hálózat nélkül is elindulnak, ugyanúgy futnak lokálisan, a saját szerveren és a felhőben, és Node alatt is tesztelhetők (nincs Deno a gépen) |
+| Titok | `FAKE_PAYMENT_WEBHOOK_SECRET`: lokálisan `supabase/.env` (git-ignorált), a szerveren a telepítő generálja a stack `.env`-jébe, a felhőben `supabase secrets set`. Hiányában a függvények leállnak | Nincs alapértelmezett érték, amit valaki ismerhetne |
+| Aláírás | `t=<unix>,v1=<HMAC-SHA256 hex>` az `<t>.<törzs>` szövegen, 5 perces tűréssel, időzítés-biztos összehasonlítással | Az időbélyeg az aláírt szövegben van, így egy régi esemény nem adható ki újnak |
+| Idempotencia | Az esemény azonosítója egyedi az adatbázisban; ugyanaz kétszer egyszer hat | A szolgáltatók többször is kézbesíthetnek |
+| Követés | A rendelés és a lista a Realtime-ra iratkozik fel; amíg az nem él, 5 mp-enként lekérdez, és percenként akkor is frissít; a kapcsolat felépülése után 2 mp-cel még egyszer lekérdez | A Realtime a feliratkozást kicsivel azelőtt jelzi késznek, hogy ténylegesen kézbesítene, az ott történt változás elveszne |
+| Hibák | A hálózati hibát a pénztár és a fizetés képernyő kezeli ("nem sikerült", újra lehet próbálni); a rendelés idempotencia-kulcsa miatt az újrapróbálás nem hoz létre másodikat | Valódi hálózaton előfordul |
+| Új függőségek | `shared_preferences` 2.x (flutter.dev, a mentett kosárhoz, e lépés) és `fake_async` 1.3.3 (dev; dart.dev ellenőrzött kiadó, Apache-2.0, nincs figyelmeztetés a pub.dev-en 2026-10-21-én; a Realtime-logika idővezérelt tesztjeihez). Mindkettő már közvetett függőség volt | A licenc bekerül az átadási licenclistába |
+| Kiszolgáló gomb | A "rendelés léptetése (demó)" gomb csak a backend nélküli módban van meg; backenddel a konyha az admin oldal (g lépés) | A vásárlónak nincs joga rendelést léptetni |
+
+**Amit a tesztelés megtalált:**
+
+- **Valódi hiba az adatbázisban:** egy lezárt (elutasított) fizetési kísérlet késve érkező "sikeres" eseménye nem talált nyitott kísérletet, mégis kifizetettnek jelölte a rendelést. A `20261021110100_payment_event_matching.sql` az eseményt csak nyitott, egyező kísérletre engedi hatni (ha az esemény megnevezi a kísérletet, annak kell lennie).
+- Egy vásárló a rendelése idősávjának idejét nem láthatta (a `delivery_slots` táblához nem volt olvasási jog). A `20261021110000_order_slot_visible.sql` megnyitja a saját rendelések idősávját (azonosító és idő, a kapacitás nem).
+- A Realtime a feliratkozást a szerver tényleges készenléte előtt jelezte késznek: a frissítés a felépülés utáni másodpercekben elveszhet. Ezért a 2 mp-es utólagos lekérdezés.
+- Az önállóan futtatott (self-hosted) átjáró a **frissen újraindított** függvény-tárolóra pár másodpercig 503-at ad, mert kétszer jó állapotellenőrzés kell neki. A telepítő megvárja, míg a függvények válaszolnak.
+
+**Ismert korlátok:** lásd [`payment-flow.md`](payment-flow.md). Nem tesztelt: a felhős Supabase Edge Functions futása (a `demo` környezet, h lépés), a Proxmox VM és a Cloudflare Tunnel (a WebSocket a Cloudflare-en át).
+
 ## Nyitott ellenőrzések
 
 - **(h) CanvasKit forrása.** Az alapértelmezett web build a CanvasKitet a Google CDN-jéről

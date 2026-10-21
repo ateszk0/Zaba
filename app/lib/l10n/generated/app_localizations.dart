@@ -748,6 +748,12 @@ abstract class AppLocalizations {
   /// **'A kártyádat elutasították. Próbálj meg másik kártyát.'**
   String get paymentDeclined;
 
+  /// No description provided for @paymentUnavailable.
+  ///
+  /// In hu, this message translates to:
+  /// **'A fizetést most nem sikerült elindítani. Ellenőrizd a kapcsolatot, és próbáld újra.'**
+  String get paymentUnavailable;
+
   /// No description provided for @paymentErrorCardNumber.
   ///
   /// In hu, this message translates to:

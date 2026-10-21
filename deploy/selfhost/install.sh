@@ -96,6 +96,12 @@ set_env ADDITIONAL_REDIRECT_URLS "$scheme://$ZABA_APP_HOST,$scheme://$ZABA_ADMIN
 set_env ENABLE_EMAIL_AUTOCONFIRM true
 set_env ENABLE_PHONE_SIGNUP false
 set_env ENABLE_PHONE_AUTOCONFIRM false
+# The payment provider's signing secret. The payment functions refuse to work
+# without it. Generated once, like the others: a new one would make payment
+# sessions that are still open invalid.
+if ! grep -q '^FAKE_PAYMENT_WEBHOOK_SECRET=.' .env; then
+  set_env FAKE_PAYMENT_WEBHOOK_SECRET "$(openssl rand -hex 32)"
+fi
 set_env ZABA_APP_HOST "$ZABA_APP_HOST"
 set_env ZABA_API_HOST "$ZABA_API_HOST"
 set_env ZABA_ADMIN_HOST "$ZABA_ADMIN_HOST"
@@ -114,13 +120,33 @@ if ! grep -q 'docker-compose.zaba.yml' .env; then
   sh run.sh config add zaba >/dev/null
 fi
 
+say "Edge Functions (payments)"
+# Functions are installed by placing their files where the Edge Runtime looks.
+# The official `main` router stays; Zaba's functions and their shared code are
+# copied next to it. Test files are not needed on the server.
+repo="$(cd "$here/../.." && pwd)"
+mkdir -p volumes/functions
+cp -a "$repo/supabase/functions/." volumes/functions/
+find volumes/functions -name '*.test.ts' -delete
+
 say "Pulling images (the first time this is several GB)"
 docker compose pull --quiet
 
 say "Starting the stack"
 sh run.sh start
-# Picks up a changed Caddyfile (its admin endpoint is off, so no live reload).
-docker compose restart caddy >/dev/null
+# Picks up a changed Caddyfile (its admin endpoint is off, so no live reload)
+# and changed function code.
+docker compose restart caddy functions >/dev/null
+# The gateway health-checks the functions every 5 seconds and needs two good
+# answers before it sends traffic to a restarted container, so for a short while
+# it answers 503. Wait until a function answers (the empty request is refused
+# by the function itself, which is the right answer).
+for _ in $(seq 1 30); do
+  code="$(curl -s -o /dev/null -m 5 -w '%{http_code}' -X POST \
+    "http://127.0.0.1:${API_GW_HTTP_PORT:-8000}/functions/v1/payments-webhook" || true)"
+  case "$code" in 000|503) sleep 2 ;; *) break ;; esac
+done
+case "$code" in 000|503) echo "WARNING: the payment functions do not answer yet (HTTP $code). Check: sh run.sh logs functions" ;; esac
 if [ -n "${CLOUDFLARE_TUNNEL_TOKEN:-}" ]; then
   docker compose --profile tunnel up -d --wait
   tunnel="running"

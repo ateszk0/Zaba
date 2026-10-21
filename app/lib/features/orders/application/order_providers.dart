@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/clock/clock.dart';
+import '../../../core/config/app_config.dart';
+import '../../auth/application/auth_providers.dart';
 import '../../cart/application/cart_providers.dart';
 import '../../delivery/application/delivery_providers.dart';
 import '../../payment/domain/payment_event.dart';
@@ -30,11 +32,26 @@ final paymentEventSinkProvider = Provider<PaymentEventSink>(
   (ref) => ref.watch(orderStoreProvider),
 );
 
-/// The customer's orders, newest first.
-final ordersProvider = StreamProvider<List<Order>>(
-  (ref) => ref.watch(orderRepositoryProvider).watchOrders(),
+/// Whether the order screen offers the "advance the order" button that stands in
+/// for the kitchen. Only the offline demo has it: with a backend the kitchen is
+/// the admin page.
+final kitchenSimulationProvider = Provider<bool>(
+  (ref) => AppConfig.showDevTools,
 );
 
-final orderProvider = StreamProvider.family<Order?, String>(
-  (ref, id) => ref.watch(orderRepositoryProvider).watchOrder(id),
-);
+/// The customer's orders, newest first. Depends on who is signed in, so a
+/// different customer on the same device never sees the previous one's orders,
+/// and a guest asks the server nothing.
+final ordersProvider = StreamProvider<List<Order>>((ref) {
+  if (ref.watch(sessionProvider) == null) {
+    return Stream.value(const <Order>[]);
+  }
+  return ref.watch(orderRepositoryProvider).watchOrders();
+});
+
+final orderProvider = StreamProvider.family<Order?, String>((ref, id) {
+  if (ref.watch(sessionProvider) == null) {
+    return Stream.value(null);
+  }
+  return ref.watch(orderRepositoryProvider).watchOrder(id);
+});

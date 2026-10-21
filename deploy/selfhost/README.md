@@ -20,8 +20,9 @@ cloudflared ──► Caddy ──► app-staging.<domain>    Flutter web build 
 
 | Kipróbálva (a fejlesztői gépen, tiszta telepítésből) | Még NEM kipróbálva |
 |---|---|
-| Az `install.sh` végig (hivatalos stack, titokgenerálás, migrációk, seed), többször futtatva is | Futtatás a **Proxmox VM**-en (a te gépeden) |
-| A 20 API-ellenőrzés és a Realtime élő frissítés a Caddyn át | A **Cloudflare Tunnel** (a tokened nélkül nem lehet) és a WebSocket a Cloudflare-en át |
+| Az `install.sh` végig (hivatalos stack, titokgenerálás, migrációk, seed, fizetési függvények), többször futtatva is | Futtatás a **Proxmox VM**-en (a te gépeden) |
+| A 20 API-ellenőrzés, a 28 fizetési ellenőrzés (valódi Edge Function-ökkel, aláírt webhookkal) és a Realtime élő frissítés | A **Cloudflare Tunnel** (a tokened nélkül nem lehet) és a WebSocket a Cloudflare-en át |
+| Az app integrációs tesztjei (35) a self-hosted stack ellen, a régi JWT-s anon kulccsal, mint a stagingen | Az app böngészős kipróbálása a **self-hosted** stacken (a CLI stacken megtörtént) |
 | Mi érhető el kívülről és mi nem (Studio, meta API: 404), CORS, a webes build kiszolgálása | A `deploy-web.sh` `rsync`/`ssh` része |
 | A Caddyfile, a shell scriptek, a compose profil szintaxisa (CI-ban is) | A telepítés `git clone`-ja a privát repóból a szerveren |
 
@@ -81,6 +82,10 @@ Figyelem: létrehoz egy teszt felhasználót és egy rendelést a staging adatb�
 SUPABASE_URL=https://api-staging.<domain> SUPABASE_PUBLISHABLE_KEY=<publishable> SUPABASE_SECRET_KEY=<secret> \
   python3 supabase/tests/api_smoke.py
 # a kulcsok: ssh a szerverre, cd ~/zaba-stack && sh run.sh secrets (a publishable és a secret kulcs)
+
+# a fizetési út a valódi Edge Function-ökön át (aláírt webhook, idempotencia, támadások)
+SUPABASE_URL=https://api-staging.<domain> SUPABASE_PUBLISHABLE_KEY=<publishable> SUPABASE_ANON_KEY=<anon> FAKE_PAYMENT_WEBHOOK_SECRET=<a stack .env-jéből> \
+  python3 supabase/tests/payment_smoke.py
 
 # élő rendelésfrissítés a WebSocketen át (a Cloudflare-en keresztül is): pip install websockets
 SUPABASE_URL=https://api-staging.<domain> SUPABASE_PUBLISHABLE_KEY=<publishable> SUPABASE_SECRET_KEY=<secret> SUPABASE_ANON_KEY=<anon> \
@@ -144,5 +149,5 @@ A teljes gép mentéséhez használd a Proxmox **backup ütemezését** (vzdump)
 
 - Az Auth beállításai környezeti változók (`.env`), nem a `config.toml` vagy a Dashboard.
 - A migrációkat az `migrate.sh` alkalmazza (a Supabase CLI ugyanazt a nyilvántartó táblát használja).
-- Az Edge Function-ök fájl-elhelyezéssel települnek (`volumes/functions`), nem `supabase functions deploy`-jal (az (f) lépésben jön).
+- Az Edge Function-ök fájl-elhelyezéssel települnek (`volumes/functions`, az `install.sh` másolja a `supabase/functions` mappát), nem `supabase functions deploy`-jal. A titkot (`FAKE_PAYMENT_WEBHOOK_SECRET`) a telepítő egyszer generálja a stack `.env`-jébe, és a compose-kiegészítés adja át a függvények tárolójának. Az átjáró függvényenkénti JWT-ellenőrzést nem ismer (a `FUNCTIONS_VERIFY_JWT` az összesre vonatkozik, alapból kikapcsolt), ezért a függvények maguk hitelesítenek: a vásárló tokenje, a munkamenet aláírása, az esemény aláírása.
 - A Realtime WebSocket kapcsolatnak át kell mennie a Cloudflare-en. Cloudflare minden csomagon támogatja a WebSocketet, de a tényleges működés az éles tunnelen **ellenőrzendő**; tartalék az 5 mp-es polling.

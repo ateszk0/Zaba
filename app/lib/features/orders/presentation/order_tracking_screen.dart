@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/config/app_config.dart';
 import '../../../core/format/date_time_format.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -64,7 +63,7 @@ class OrderTrackingScreen extends ConsumerWidget {
             const SizedBox(height: AppSpacing.sm),
             _DeliveryWindow(order: order),
           ],
-          if (AppConfig.showDevTools && order.status.next != null)
+          if (ref.watch(kitchenSimulationProvider) && order.status.next != null)
             Align(
               alignment: Alignment.centerLeft,
               child: TextButton.icon(

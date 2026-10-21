@@ -383,8 +383,8 @@ inspector_port = 8083
 # The Deno major version to use.
 deno_version = 2
 
-# [edge_runtime.secrets]
-# secret_key = "env(SECRET_VALUE)"
+[edge_runtime.secrets]
+FAKE_PAYMENT_WEBHOOK_SECRET = "env(FAKE_PAYMENT_WEBHOOK_SECRET)"
 
 [analytics]
 enabled = true

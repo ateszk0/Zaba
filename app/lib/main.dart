@@ -16,6 +16,10 @@ import 'features/catalog/data/supabase_catalog_repository.dart';
 import 'features/delivery/application/delivery_providers.dart';
 import 'features/delivery/data/supabase_delivery_slot_service.dart';
 import 'features/delivery/data/supabase_delivery_zone_repository.dart';
+import 'features/orders/application/order_providers.dart';
+import 'features/orders/data/supabase_order_repository.dart';
+import 'features/payment/application/payment_providers.dart';
+import 'features/payment/data/supabase_payment_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -58,6 +62,18 @@ Future<void> main() async {
       deliverySlotServiceProvider.overrideWith(
         (ref) => SupabaseDeliverySlotService(client),
       ),
+      orderRepositoryProvider.overrideWith(
+        (ref) => SupabaseOrderRepository(client),
+      ),
+      paymentServiceProvider.overrideWith(
+        (ref) => SupabasePaymentService(
+          client,
+          orders: ref.watch(orderRepositoryProvider),
+          processingDelay: ref.watch(paymentProcessingDelayProvider),
+        ),
+      ),
+      // The kitchen is the admin page now, not a button in the customer app.
+      kitchenSimulationProvider.overrideWithValue(false),
     ]);
   }
 

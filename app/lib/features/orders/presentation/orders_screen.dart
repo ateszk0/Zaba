@@ -19,7 +19,6 @@ class OrdersScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final signedIn = ref.watch(sessionProvider) != null;
-    final orders = ref.watch(ordersProvider);
 
     if (!signedIn) {
       return Scaffold(
@@ -36,6 +35,7 @@ class OrdersScreen extends ConsumerWidget {
       );
     }
 
+    final orders = ref.watch(ordersProvider);
     return Scaffold(
       appBar: AppBar(title: Text(l10n.navOrders)),
       body: orders.when(

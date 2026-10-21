@@ -13,6 +13,12 @@ services:
   supavisor:
     ports: !reset []
 
+  # The payment functions need the payment provider's signing secret, which the
+  # installer generates into the stack's .env. Without it they refuse to work.
+  functions:
+    environment:
+      FAKE_PAYMENT_WEBHOOK_SECRET: ${FAKE_PAYMENT_WEBHOOK_SECRET}
+
   # Serves the web builds and the allow-listed API paths. TLS ends at
   # Cloudflare, so Caddy speaks plain HTTP inside the Docker network.
   caddy:

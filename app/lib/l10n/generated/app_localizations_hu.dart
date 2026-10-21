@@ -386,6 +386,10 @@ class AppLocalizationsHu extends AppLocalizations {
       'A kártyádat elutasították. Próbálj meg másik kártyát.';
 
   @override
+  String get paymentUnavailable =>
+      'A fizetést most nem sikerült elindítani. Ellenőrizd a kapcsolatot, és próbáld újra.';
+
+  @override
   String get paymentErrorCardNumber => 'Érvénytelen kártyaszám.';
 
   @override

@@ -48,6 +48,13 @@ jobs:
       # The Supabase CLI is pinned in package.json.
       - run: npm ci
 
+      # The payment provider's signing secret for the local stack's Edge
+      # Functions: random, for this run only (the CLI reads supabase/.env).
+      - run: echo "FAKE_PAYMENT_WEBHOOK_SECRET=$(openssl rand -hex 32)" > supabase/.env
+
+      # The shared payment code (signing, sessions, webhook verification).
+      - run: npm run test:functions
+
       # Local stack without the parts the tests do not need.
       - run: npx supabase start -x studio,imgproxy,vector,logflare,mailpit
 
@@ -59,6 +66,9 @@ jobs:
       - run: python3 -m pip install --quiet websockets==17.3
       - run: python3 supabase/tests/realtime_smoke.py --from-local
 
+      # The payment path through the real Edge Functions.
+      - run: python3 supabase/tests/payment_smoke.py --from-local
+
       # Twice: the second run must find the account and leave it alone.
       - run: python3 tool/create_demo_user.py --from-local
       - run: python3 tool/create_demo_user.py --from-local
@@ -69,11 +79,12 @@ jobs:
           flutter-version: 3.47.0
           channel: stable
           cache: true
-      - name: Auth integration test
+      - name: App integration tests (auth, menu, cart, orders, payment)
         working-directory: app
         run: |
           flutter pub get
-          key="$(npx supabase status -o json | python3 -c 'import json, sys; t = sys.stdin.read(); print(json.loads(t[t.index("{"):])["PUBLISHABLE_KEY"])')"
+          # The legacy anon JWT, as on the self-hosted staging.
+          key="$(npx supabase status -o json | python3 -c 'import json, sys; t = sys.stdin.read(); print(json.loads(t[t.index("{"):])["ANON_KEY"])')"
           flutter test test/integration \
             --dart-define=ZABA_TEST_SUPABASE_URL=http://127.0.0.1:54321 \
             --dart-define=ZABA_TEST_SUPABASE_KEY="$key"
