@@ -30,6 +30,8 @@ flutter:
 
   assets:
     - assets/images/products/
+    # The logo mark; the 2.0x and 3.0x folders next to it hold the sharper copies.
+    - assets/brand/logo_mark.png
 
   # Static, Latin/Latin-Extended subsets built by tool/fonts/subset_fonts.py.
   fonts:

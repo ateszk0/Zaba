@@ -45,7 +45,7 @@ Ami **nem** adódik át, és nem is lehet: a fejlesztő gépén lévő helyi ada
 |---|---|---|
 | `applicationId` `hu.zaba.zaba` | a megrendelő végleges azonosítója | `app/android/app/build.gradle.kts`, az `AndroidManifest.xml` |
 | Android aláíró kulcs (demó) | a megrendelő saját kulcsa | `tool/android/create_demo_keystore.sh` a mintája |
-| Ikonok, betöltőképernyő, `Z` jel | a végleges logó (k lépés) | `tool/brand/make_placeholder_icons.py` generálja a helyőrzőt; `app/web/icons`, `app/android/…/mipmap-*` |
+| Logó és ikonok (a Z a robogóval) | **kész**, de a megrendelő saját arculatára cserélhető: egyetlen SVG a forrás (`app/assets/brand/zaba-mark.svg`), `python3 tool/brand/make_icons.py` rajzol belőle mindent (webes és Android ikonok, adaptív ikon, az appon belüli jel). A logó **védjegy- és hasonlósági vizsgálata nem történt meg** | `app/web/icons`, `app/android/…/mipmap-*`, `app/assets/brand/` |
 | A 41 stock fotó (Wikimedia) | a megrendelő saját fotói | `app/assets/images/products/`, [`image-credits.md`](image-credits.md); 4 terméknek ma nincs fotója |
 | **DEMÓ szalag, a profil „Ez egy demó" kártyája, a regisztrációs figyelmeztetés** | éles buildben **nem jelenhet meg** | `demoBanner`, `profileDemo…`, `authRegisterDemoNote` az `app_hu.arb`-ban; a `demo_banner.dart` |
 | **Szimulált fizetés** (`FakePaymentProvider`, a három Edge Function) | az éles szolgáltató adaptere | [`payment-flow.md`](payment-flow.md), [`architecture.md`](architecture.md) |

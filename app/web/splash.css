@@ -17,17 +17,7 @@ html, body { margin: 0; height: 100%; background: #FBF8F1; }
   z-index: 10;
 }
 
-#splash .mark {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  background: #2F7A3E;
-  color: #fff;
-  font-size: 44px;
-  font-weight: 800;
-  line-height: 72px;
-  text-align: center;
-}
+#splash .mark { width: 72px; height: auto; }
 
 #splash .name { font-size: 28px; font-weight: 700; color: #1F4D2B; }
 #splash .note { font-size: 14px; color: #5E6B61; }

@@ -103,7 +103,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Center(child: ZabaWordmark()),
+                      const Center(child: ZabaWordmark(size: 44)),
                       const SizedBox(height: AppSpacing.sm),
                       Text(
                         l10n.adminLoginTitle,

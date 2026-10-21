@@ -13,6 +13,10 @@ demója) a [`decisions.md` Eredet szakasza](decisions.md#eredet-provenance) szó
 írta a fejlesztő utasításai szerint**; a commitokban ez társszerzői sorként szerepel. Ennek szerzői jogi következményei bizonytalanok, lásd a
 [szerződés-melléklet vázlatát](contract-annex-outline.md#ai-val-készült-kód).
 
+### A logó
+
+A logó (a Z a robogóval) terve **a tulajdonos által adott kép**; az `app/assets/brand/zaba-mark.svg` ennek **kézzel készített újrarajzolása** (mérésekből, nem automatikus képkövetés). Nem harmadik féltől vett grafika, de a kép eredetét (ki készítette, milyen eszközzel) a tulajdonosnak kell rögzítenie, és a logó **védjegy- és hasonlósági vizsgálata nem történt meg** ([`known-gaps.md`](known-gaps.md)). A "Zaba" felirat az appban a Baloo 2 betűvel készül (lásd a 3. részt).
+
 ## 2. Dart és Flutter csomagok (az app)
 
 A táblázatot a `tool/licenses.py` állítja elő a helyi pub gyorsítótár LICENSE fájljaiból, a **gyártási függőségi fa** csomagjaira (a fejlesztői
@@ -153,7 +157,8 @@ képek a demóhoz valók.
 | Supabase CLI (`supabase`, npm) | 2.121.0 | MIT | helyi stack, migrációk, függvények telepítése |
 | Wrangler (`wrangler`, npm) | 4.149.0 | MIT OR Apache-2.0 | a Cloudflare-oldalak telepítése, helyi kiszolgálás |
 | Flutter SDK / Dart SDK | 3.47.0 / 3.13.0 | BSD-3-Clause (Flutter) | az app építése |
-| Pillow, fontTools (Python) | nincs rögzítve | nem ellenőriztem | csak a `tool/brand`, `tool/fonts`, `tool/images` scriptek (ikonok, betű-részhalmaz, képek), a fejlesztő gépén |
+| Pillow, fontTools (Python) | nincs rögzítve | nem ellenőriztem | csak a `tool/fonts` és `tool/images` scriptek (betű-részhalmaz, képek), a fejlesztő gépén |
+| librsvg (`rsvg-convert`) | nincs rögzítve | nem ellenőriztem | csak a `tool/brand/make_icons.py` (az ikonok előállítása az SVG-ből), a fejlesztő gépén |
 | websockets (Python) | nincs rögzítve | nem ellenőriztem | csak a `supabase/tests/realtime_smoke.py` |
 
 A npm függőségfa (`package-lock.json`) tranzitív csomagjainak licencét nem soroltam fel; a `npm audit` 0 sebezhetőséget jelez (2026-10-21).

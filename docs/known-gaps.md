@@ -92,8 +92,9 @@ az app csomagjában vannak.
 | **Nincs iOS app** (a webes változat iPhone-on is megy) | App Store-ban csak natív app jelenhet meg | Apple Developer fiók, aláírás, TestFlight | M, F |
 | **Android: helyőrző `applicationId` (`hu.zaba.zaba`) és demó aláíró kulcs** | Az éles azonosítót és kulcsot a tulajdonos választja; a kulcs elvesztése frissítés-képtelenné tesz | Saját azonosító, saját kulcstár (a repón kívül, mentve) | M, F |
 | **Áruházi beadás (Google Play)** nincs | Az áruház saját kötelező elemeket kér (például adatvédelmi nyilatkozat) | A beadás előkészítése | M, F |
-| **Az ikon és a betöltőképernyő helyőrző, a logó nincs kész** | Arculat | A végleges logó (k lépés) | M |
-| **Telefonos ellenőrzés még nem futott** valódi eszközön | iPhone Safari, Android Chrome, az APK ismeretlen kockázatok | A [`test-checklist.md`](test-checklist.md) végigmenése | M |
+| **A logó és a név védjegy- és hasonlósági vizsgálata nem történt meg.** A logó a tulajdonos képének újrarajzolása, a robogó-sziluett gyakori szállítás-szimbólum; a kép eredetét a tulajdonos rögzítse | A megrendelő védjegyként használhatja-e, és nem sért-e meglévő jelet, azt nem tudom | Védjegykutatás és jogi vélemény a névre és a jelre | J, M |
+| **Android 13-as témázható (monokróm) ikon nincs**; natív iOS ikon sincs (nincs natív iOS app) | Kényelem, áruházi megjelenés | Egyszínű ikon-réteg az SVG-ből (a generátor kiegészíthető) | F |
+| **Telefonos ellenőrzés még nem futott** valódi eszközön (az ikonok maszkolását is csak képen szimuláltam) | iPhone Safari, Android Chrome, az APK ismeretlen kockázatok | A [`test-checklist.md`](test-checklist.md) végigmenése | M |
 | **A `viewport-fit=cover` kikerült** (a Flutter web nem veszi át a safe-area értékeket); a hatása iPhone-on **nem tesztelt** | Az alsó sáv a home-jelző alá kerülhetne | A listában az A3, A6, F2 sor | F |
 | **Emoji és nem csomagolt írásjegyek dobozként jelennek meg** (a CSP tiltja a külső betűt) | A vásárló megjegyzésében előfordulhat | Betűcsomag bővítése vagy a CSP átgondolása | F |
 | **Képernyőolvasó-támogatás nem tesztelt** (a kontraszt tesztelt: WCAG AA/AAA) | Hozzáférhetőség | Teszt képernyőolvasóval | F |

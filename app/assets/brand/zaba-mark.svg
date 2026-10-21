@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="436 456 682 738" role="img" aria-labelledby="zaba-title">
+  <title id="zaba-title">Zaba</title>
+  <!--
+    The Zaba mark: a rounded Z with a delivery scooter riding along its foot, and four speed
+    lines cut into its diagonal. One filled shape in one colour, so it can be recoloured
+    (white on green for the app icon, green on cream inside the app) and it stays sharp from
+    16 px to a poster.
+
+    The design comes from the picture the owner supplied. This file is a hand redrawing of it
+    from measurements, not an automatic trace: the Z is a single 152-unit stroke with round
+    ends (top bar, diagonal, bottom bar), the speed lines are slots in the diagonal's right
+    edge, and the scooter is one outline plus two equal round wheels whose tops the body covers. Coordinates are those of the 1536 px
+    picture. This file is the source: tool/brand/make_icons.py draws every icon from it.
+
+    The path winds clockwise for what is filled (Z, scooter, wheels) and counter-clockwise for
+    the holes (the wheel hubs), with the default nonzero fill rule.
+  -->
+  <path fill="#28A956" d="M533 462H1018A76 76 0 0 1 1075.3 587.9L783.6 922.8H696.2A7.2 7.2 0 0 0 696.2 937.2H771L755 955.7H639A7.2 7.2 0 0 0 639 970.2H742.3L726.3 988.6H579A7.2 7.2 0 0 0 579 1003.1H713.7L697.6 1021.5H631.2A7.2 7.2 0 0 0 631.2 1036H685L685 1036H1036A76 76 0 0 1 1036 1188H518A76 76 0 0 1 460.7 1062.1L851 614H533A76 76 0 0 1 533 462ZM809.3 936L878.3 936Q887.7 936 887.7 945.3L887.7 955C887.7 961 874.3 962 874.3 975.3L874.3 984C874.3 994 886.7 998.3 901.7 998.3L926.6 999C937 999 944 992 944.2 979C944.4 963 938 933 933 915L931 909.4 920 909.4Q914 909.4 914.4 905.4Q914.8 901 920 900.6L930 900C933 896.6 937 891 943 889.6L959 889.4Q962 889.4 962 893L962 913Q962 915.6 959 915.6L952.4 916C954.4 923 960 935 970 949C974 954 976 957.4 976.4 961.8C986 961.8 1000 965 1010 979.2C1002 977 988 976 976 979C967 981.2 957 987 953.6 997C952.4 1003 951.6 1008 949.6 1013Q948 1016.2 943 1016.2L862.7 1016.7C858.7 1014 857.3 1002.7 854.7 995L775.3 995Q769.7 995 770 989.3C770.7 984 776.7 981.3 778.7 975.3C779.3 970 780.7 965.3 789.3 964L807.7 957L802.7 950.7L801.7 943.3Q801.7 936 809.3 936ZM791.2 1010A27.5 27.5 0 1 1 846.2 1010A27.5 27.5 0 1 1 791.2 1010ZM957.5 1010A27.5 27.5 0 1 1 1012.5 1010A27.5 27.5 0 1 1 957.5 1010ZM806.7 1010A12 12 0 1 0 830.7 1010A12 12 0 1 0 806.7 1010ZM973 1010A12 12 0 1 0 997 1010A12 12 0 1 0 973 1010Z"/>
+</svg>

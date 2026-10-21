@@ -216,7 +216,7 @@ A teljes eljárás: [`demo-environment.md`](demo-environment.md).
 | Életben tartás | `keepalive.yml`: naponta egy lekérdezés; csak a `DEMO_SUPABASE_URL` beállítása után fut | A Free projekt egy hét után szünetel. A GitHub a 60 napos kikapcsolást a dokumentációja szerint csak publikus repóra mondja; ez privát |
 | Cloudflare eszköz | `wrangler` 4.149.0, a gyökér `package.json`-ban rögzítve, a legfrissebb olyan kiadás, ami már nem húzza be a sebezhető `sharp`-ot (a 4.148.0 és a korábbiak: `npm audit` három magas találat; most 0) | Az eszköz csak telepít és helyben statikus fájlt szolgál ki, de az átadott repó ne hozzon audit-hibát |
 | APK | Csak `arm64-v8a` (23,5 MB), a repón kívüli kulccsal aláírva (`tool/android/create_demo_keystore.sh`); a `build-apk.sh` visszautasítja a debug kulccsal aláírt, az INTERNET jogosultság nélküli vagy 25 MiB feletti APK-t. A letöltő oldal külön oldal, így a web telepítések sosem érintik | 32 bittel együtt ~40 MB lenne, a Cloudflare 25 MiB fölött nem szolgál ki. Az `applicationId` helyőrző |
-| Ikonok | Helyőrző: zöld korong fehér „Z”-vel (`tool/brand/make_placeholder_icons.py`) webre, iOS-re és Androidra; a végleges logó a k lépésben | A logó a legvégén készül |
+| Ikonok | A végleges logóból (lásd a k lépést), `tool/brand/make_icons.py`-vel webre, iOS-re és Androidra | A logó a legvégén készült |
 
 **Amit a tesztelés megtalált:**
 
@@ -247,6 +247,31 @@ Ami ide tartozik és itt kipróbálható volt, azt kipróbáltam.
 - A háttérben futó `wrangler` **gyerekfolyamatai** egy egyszerű `kill` után életben maradnak (az `npx` → `node` → `workerd` lánc): a script a teljes fát leállítja kilépéskor.
 
 **Ismert korlátok:** a telefonos lista egyetlen sora sem futott valódi eszközön (az iPhone Safari, az Android Chrome és az APK a te dolgod); a `viewport-fit` változtatás hatása iPhone-on nem tesztelt; a billentyűzet (a kártyaoldalon és a keresésen) csak a lista szerint ellenőrizhető.
+
+## Logó és ikonok (k lépés)
+
+A logó terve **a tulajdonos által adott kép**: fehér, lekerekített végű „Z” zöld alapon, a lába mentén egy kiszállító robogóval és négy sebességcsíkkal. (Az én korábbi béka-ötletem, két paradicsom-szemmel és tálszájjal, nem ez volt: a tulajdonos az egyszerű Z-t kérte „minimális extrával".)
+
+| Téma | Döntés | Miért |
+|---|---|---|
+| Forrás | `app/assets/brand/zaba-mark.svg`: **egyetlen kitöltött útvonal**, egy színnel, átlátszó háttérrel. A Z egy 152 egység vastag, kerek végű vonal (felső szár, átló, alsó szár); a sebességcsíkok az átló jobb szélébe vágott rések; a robogó egy körvonal és két kerék | Újraszínezhető (fehér zöldön az ikonhoz, zöld krémen az appban), és 16 px-től plakátig éles. **Kézzel újrarajzolva a kép méréseiből, nem automatikus képkövetés**; a Z geometriáját a kép sorainak pásztázásával, a robogóét nagyított összevetéssel illesztettem |
+| A tulajdonos kérései | A legalsó sebességcsík az alsó szár tetejének vonalában fut (a kerekek is ezen állnak); a hátsó kerék **kerek, mint az első** (két egyforma, tökéletes kör, kerek hubbal), de a test még takarja a tetejét | A referencia első kerekét én ovális alakban rajzoltam át, és a hátsó félholdnak látszott; mindkettőt kijavítottam |
+| Ikonok | `tool/brand/make_icons.py` (csak `rsvg-convert` kell) állítja elő: a logó SVG-t (`zaba-logo.svg`), az appon belüli jelet (1x, 2x, 3x), a webes ikonokat (rendes, maszkolható, iOS), a favicont, a betöltőképernyő jelét, az Android régi és **adaptív** ikonját | Egy forrás, nincs kézi export. A maszkolható és az adaptív ikonban a jel a biztonságos körön belül van (80%, illetve a 108 dp-ből a 66 dp) |
+| Szín | Az ikon háttere a kép zöldje, `#28A956`; az appon belüli jel is ez | A tulajdonos képe ez. **A felület zöldje (`#2F7A3E`) sötétebb**: ha egységesíteni akarod, a téma vagy a logó színe egy sor |
+| Appon belül | A `ZabaWordmark` a jel képét (PNG, a SVG-ből) és mellette a „Zaba” szöveget mutatja; a két belépő képernyőn 44 px magas | Nincs új függőség (nem kell SVG-csomag) |
+| Kis méret | Kb. 32 px alatt a robogó beleolvad, a Z viszont tisztán olvasható (16 px-en is) | Ez a „minimális extra": az ikon lényege a Z |
+| Betöltőképernyő és favicon | A betöltőképernyő a zöld jelet mutatja krém alapon (SVG, a CSP-vel is megfér); a böngészőfül SVG-ikont kap, PNG tartalékkal | |
+
+**Amit a tesztelés megtalált:**
+
+- **Saját hibám az i lépésből:** a termékkártya ár és mennyiség sorát `Wrap`-re cseréltem, hogy kis kijelzőn ne lógjon ki, de a `Wrap` csak a tartalma szélességét veszi fel, ezért a „+" gomb az ár mellé tapadt, nem a jobb szélre. A túlcsordulás-teszt ezt nem látta. Javítva (`SizedBox` a teljes szélességgel), és egy elrendezés-teszt is védi (`product_card_layout_test.dart`; a hibás kártyán elbukik, 137 és 60 px távolsággal a jobb szélig).
+- A robogó körvonalát a kép ötszörös nagyításán, két körben igazítottam (a kormányoszlop dől, a fej és a markolat egy darab, a sárvédő alatt rés van); az eltérés a képhez képest a JPEG-zajon belül marad.
+
+**Ami nincs kész, és nem tesztelt:**
+
+- **Védjegy- és hasonlósági vizsgálat nem történt**: a „Zaba" névre és a logóra sem. A robogó-sziluett gyakori szállítás-szimbólum. Ügyvédnek kell megvizsgálnia, mielőtt a megrendelő védjegyként használja.
+- A kép **eredetét** (ki készítette, milyen eszközzel) a tulajdonosnak kell rögzítenie; az SVG ennek az újrarajzolása.
+- Az Android 13-as **témázható (monokróm) ikon** nincs; natív iOS ikon nincs (nincs natív iOS app); az ikonok valódi telefonon nem lettek megnézve (a maszkolást itt, képen szimuláltam).
 
 ## Átadási csomag (j lépés)
 

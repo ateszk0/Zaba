@@ -49,6 +49,8 @@ Tények ([`decisions.md`, Eredet](decisions.md#eredet-provenance)):
 - A kód önállóan készült, és **nem tartalmaz, nem használ forrásként harmadik fél védett kódját**. Az ilyen referenciaanyag a repón kívül van, a `.gitignore` kizárja; ellenőrizve: a nyomon követett fájlok és a teljes commit-történet között **nincs** ilyen.
 - A felület elrendezésének forrása a tulajdonos által átadott, **saját munkaként megnevezett** „Falatozó" Flutter demó; a kódja nem lett átvéve, a Zaba architektúrájában újraíródott. A tulajdonos ezt a fejlesztői beszélgetésben megerősítette (2026-10-21).
 
+- A **logó** terve a tulajdonos által adott kép; az SVG ennek újrarajzolása. A kép eredetét (ki készítette, milyen eszközzel) a tulajdonos rögzítse. A logó és a „Zaba” név **védjegy- és hasonlósági vizsgálata nem történt meg.**
+
 Kérdések: Milyen **mértékű nyilatkozat** adható („legjobb tudomásom szerint", a vizsgált körre)? A „Falatozó" saját munka voltát **külön, írásos nyilatkozatban** érdemes-e rögzíteni, és ki írja alá? Szükséges-e, hogy a megrendelő is nyilatkozzon valamiről (például a saját átadott anyagairól)?
 
 ## AI-val készült kód

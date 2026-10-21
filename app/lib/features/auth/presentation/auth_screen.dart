@@ -151,7 +151,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Center(child: ZabaWordmark()),
+                      const Center(child: ZabaWordmark(size: 44)),
                       const SizedBox(height: AppSpacing.lg),
                       if (headsToCheckout) ...[
                         Text(

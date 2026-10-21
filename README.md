@@ -23,7 +23,7 @@ teljes vásárlási úton. Az architektúra úgy épül, hogy az MVP-be **bőví
 | h | Demó környezet: Cloudflare (app, admin, APK letöltés) és Supabase Free, szigorú fejlécek, aláírt Android APK, napi életben tartás | kész és helyben tesztelt (emulátoron az APK is); a felhős fiókokon még nem futott |
 | i | Eszközellenőrzés: telefonos ellenőrző lista, helyi hálózati előnézet, kis kijelzős tesztek, iPhone biztonságos terület | kész a részem; a listát te futtatod a telefonokon (iPhone Safari, Android Chrome, APK), az eredményekre vár |
 | j | Átadási csomag: architektúra, környezeti változók, licenc-leltár, átadási lista, ismert hiányok, szerződés-melléklet vázlata | kész, jóváhagyásra vár |
-| k | Végleges logó | nincs |
+| k | Végleges logó (a Z a robogóval, vektoros), ikonok, betöltőképernyő | kész, jóváhagyásra vár |
 
 ## Helyi indítás
 
@@ -95,7 +95,7 @@ deploy/     selfhost: a saját szerveres staging; demo: a megrendelőnek adható
 config/     környezetenkénti dart-define sablonok (az éles fájlok nincsenek a repóban)
 docs/       döntések és dokumentáció
 tool/       segédscriptek: demó- és munkatársi fiókok, a telepített demó ellenőrzése, helyi hálózati előnézet (telefonhoz),
-            licenc-leltár, ikonok, Android kulcstár, betűtípus-részhalmaz, termékfotók
+            licenc-leltár, a logó és az ikonok előállítása, Android kulcstár, betűtípus-részhalmaz, termékfotók
 ```
 
 A titkok sosem kerülnek a repóba: lásd `.env.example`. A kliensbe (web build, APK) csak publikus érték kerülhet.

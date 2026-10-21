@@ -128,7 +128,7 @@ magától megjelenik.
 
 | # | Mit csinálj | Mit kell látnod |
 |---|---|---|
-| F1 ★ | **iPhone Safari:** Megosztás, **Főképernyőhöz adás** | A név "Zaba", az ikon a zöld "Z" (helyőrző; a végleges logó a k lépésben) |
+| F1 ★ | **iPhone Safari:** Megosztás, **Főképernyőhöz adás** | A név "Zaba", az ikon a zöld alapon fehér **Z a robogóval** (a Z teljes, nem csorbul le; a robogó kis méretben apró, ez várható) |
 | F2 ★ | Nyisd meg a főképernyős ikonról | **Teljes képernyőn** nyílik (nincs Safari-sáv), az állapotsor olvasható; **az alsó sáv a gesztus-sáv fölött / mellett jól használható** (lásd A3) |
 | F3 ★ | Ebben a módban: belépés, rendelés, kilépés az appból, újranyitás | A belépés megmarad. (Az iPhone főképernyős módja általában **külön tárhelyet** használ a Safaritól, ezért ott elölről kell belépni: ez várható, nem hiba) |
 | F4 | **Android Chrome:** menü, "Alkalmazás telepítése" vagy "Hozzáadás a kezdőképernyőhöz" | Csak **https** címen (B út) jön fel. Az ikon és a név a manifest szerinti |
@@ -150,6 +150,7 @@ Az APK az oldalon (`https://zaba-apk.<fiók>.workers.dev`) tölthető le. Az APK
 | G8 | Fordítás fekvőbe | Nincs levágott tartalom |
 | G9 | Rendszer **sötét mód** be | Az app világos marad, minden olvasható |
 | G10 | Rendszer **nagy betűméret** (Beállítások, Megjelenítés, Betűméret: a legnagyobb) | Az étlap, a kosár, a pénztár olvasható, **semmi nem vágódik le**; a gombok elérhetők |
+| G11 | A **telepített app ikonja** a kezdőképernyőn (és az alkalmazáslistában) | Zöld alap, fehér Z; a **telefon alakú maszk** (kör, négyzet, lekerekített négyzet) nem vág bele a Z-be |
 
 ## H. Az admin oldal telefonon vagy tabletről
 
@@ -187,7 +188,7 @@ Az admin elsősorban gépre készült; itt csak az kell, hogy telefonon se legye
 - Az értesítések csak az appon belül jelennek meg (nincs telefonos push), és nem maradnak meg újranyitás után.
 - A "Következő állapot (demó)" gomb a vásárlói appban nincs (az adminból léptetsz).
 - Az ÁFA-kulcsok, az allergén-adatok és a jogi jellegű szövegek **illusztratívak**, a helyességüket könyvelővel / ügyvéddel kell egyeztetni.
-- Az ikon és a betöltőképernyő **helyőrző**; a végleges logó a k lépésben készül.
+- A logó a tulajdonos terve alapján újrarajzolt vektor; a **védjegy- és hasonlósági vizsgálata** nem történt meg ([`known-gaps.md`](known-gaps.md)).
 - A telepítés ajánlata (F4) csak https-en jön fel; a Play Protect figyelmeztetése az APK-nál (G2) várható.
 
 ## Jegyzőlap (másold ki)
@@ -204,7 +205,7 @@ C1:  C2:  C3:  C4:  C5:
 D1:  D2:  D3:  D4:  D5:  D6:  D7:  D8:  D9:  D10:
 E1:  E2:  E3:  E4:  E5:  E6:
 F1:  F2:  F3:  F4:  F5:
-G1:  G2:  G3:  G4:  G5:  G6:  G7:  G8:  G9:  G10:
+G1:  G2:  G3:  G4:  G5:  G6:  G7:  G8:  G9:  G10:  G11:
 H1:  H2:  H3:
 J1 (mp):  J2:  J3:
 
