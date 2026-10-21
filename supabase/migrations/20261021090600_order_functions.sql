@@ -22,11 +22,16 @@ $$;
 -- Cancelling also gives the delivery slot back and, for a paid order, marks
 -- the payment as refunded (in the demo immediately; the MVP asks the payment
 -- provider for the refund).
+--
+-- The order row is updated exactly once, status and payment status together:
+-- anybody following the order live (Realtime) then never sees a half-done
+-- state such as "paid, but still waiting for payment".
 create function private.transition_order(
   p_order_id uuid,
   p_to public.order_status,
   p_actor text,
-  p_actor_id uuid default null
+  p_actor_id uuid default null,
+  p_payment_status public.payment_status default null
 )
 returns public.orders
 language plpgsql
@@ -36,6 +41,7 @@ as $$
 declare
   v_order public.orders;
   v_from public.order_status;
+  v_payment public.payment_status;
 begin
   select * into v_order from public.orders where id = p_order_id for update;
   if not found then
@@ -53,7 +59,16 @@ begin
     raise exception 'invalid_transition' using detail = format('%s -> %s by %s', v_from, p_to, p_actor);
   end if;
 
-  update public.orders set status = p_to where id = p_order_id returning * into v_order;
+  -- A paid order that is cancelled is refunded.
+  v_payment := case
+    when p_to = 'cancelled' and v_order.payment_status = 'succeeded' then 'refunded'::public.payment_status
+    else coalesce(p_payment_status, v_order.payment_status)
+  end;
+
+  update public.orders
+     set status = p_to, payment_status = v_payment
+   where id = p_order_id
+   returning * into v_order;
 
   insert into public.order_status_history (order_id, from_status, to_status, actor, actor_id)
   values (p_order_id, v_from, p_to, p_actor, p_actor_id);
@@ -65,9 +80,8 @@ begin
     update public.deliveries set delivered_at = now() where order_id = p_order_id;
   elsif p_to = 'cancelled' then
     update public.delivery_slots set booked = greatest(booked - 1, 0) where id = v_order.slot_id;
-    if v_order.payment_status = 'succeeded' then
+    if v_payment = 'refunded' then
       update public.payments set status = 'refunded' where order_id = p_order_id and status = 'succeeded';
-      update public.orders set payment_status = 'refunded' where id = p_order_id returning * into v_order;
     end if;
   end if;
 
@@ -215,7 +229,8 @@ begin
     insert into public.payments (order_id, amount_huf)
     values (p_order_id, v_order.total_huf)
     returning * into v_payment;
-    update public.orders set payment_status = 'pending' where id = p_order_id;
+    -- Only when it really changes: every write to the order is a live event.
+    update public.orders set payment_status = 'pending' where id = p_order_id and payment_status <> 'pending';
   end if;
 
   return jsonb_build_object(
@@ -278,8 +293,7 @@ begin
 
   if p_type = 'succeeded' then
     update public.payments set status = 'succeeded' where id = v_payment_id;
-    update public.orders set payment_status = 'succeeded' where id = p_order_id;
-    perform private.transition_order(p_order_id, 'received', 'payment');
+    perform private.transition_order(p_order_id, 'received', 'payment', null, 'succeeded');
   elsif p_type = 'failed' then
     update public.payments set status = 'failed' where id = v_payment_id;
     update public.orders set payment_status = 'failed' where id = p_order_id;
