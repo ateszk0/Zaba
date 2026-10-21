@@ -103,7 +103,7 @@ Kivitelezés és runbook: [`deploy/selfhost/`](../deploy/selfhost/README.md).
 **Ismert korlátok (demó, az MVP-ben kezelendő):**
 
 - A „már van fiók ezzel a címmel" üzenet elárulja, hogy egy cím regisztrált-e (felhasználó-felderítés). Megerősítéssel az MVP-ben ez elkerülhető.
-- A rendelések még a memóriabeli tárból jönnek, nem felhasználónként: kijelentkezés után egy másik fiók ugyanazon az eszközön látná őket. A következő lépések (pénztár és rendelés a szerveren, RLS) ezt megszüntetik.
+- A rendelések még a memóriabeli tárból jönnek, nem felhasználónként: kijelentkezés után egy másik fiók ugyanazon az eszközön látná őket. A következő lépések (pénztár és rendelés a szerveren, RLS) ezt megszüntetik. **Megoldva az f lépésben:** a rendelések a szerveren vannak, sor szintű jogosultsággal, felhasználónként.
 - Profilszerkesztés (név, telefon, allergén-figyelmeztetések, mentett címek) nincs; az adatbázis előkészített hozzá.
 - Elfelejtett jelszó nincs (e-mail küldés nélkül nem működik).
 
@@ -144,7 +144,7 @@ Kivitelezés és runbook: [`deploy/selfhost/`](../deploy/selfhost/README.md).
 **Ismert korlátok (demó):**
 
 - Minden +/− érintés új árazási kérést indít, nincs késleltetett összevonás; a legutolsó válasz számít. Gyors kattintásnál a szám egy pillanatra elmaradhat.
-- A rendelés még a memóriabeli tárba kerül, ezért az idősáv foglalása sem a szerveren történik; a következő lépés (rendelés és fizetés a szerveren) ezt megszünteti. A pénztár addig is a szerver árazását és idősávjait használja, ezért belépés kell hozzá.
+- A rendelés még a memóriabeli tárba kerül, ezért az idősáv foglalása sem a szerveren történik; a következő lépés (rendelés és fizetés a szerveren) ezt megszünteti. A pénztár addig is a szerver árazását és idősávjait használja, ezért belépés kell hozzá. **Megoldva az f lépésben:** a rendelés és az idősáv foglalása a szerveren történik.
 - A cím nincs mentve (újratöltés után újra meg kell adni); a mentett címek az MVP-ben jönnek.
 
 ## Rendelés és fizetés (f lépés)
@@ -247,6 +247,30 @@ Ami ide tartozik és itt kipróbálható volt, azt kipróbáltam.
 - A háttérben futó `wrangler` **gyerekfolyamatai** egy egyszerű `kill` után életben maradnak (az `npx` → `node` → `workerd` lánc): a script a teljes fát leállítja kilépéskor.
 
 **Ismert korlátok:** a telefonos lista egyetlen sora sem futott valódi eszközön (az iPhone Safari, az Android Chrome és az APK a te dolgod); a `viewport-fit` változtatás hatása iPhone-on nem tesztelt; a billentyűzet (a kártyaoldalon és a keresésen) csak a lista szerint ellenőrizhető.
+
+## Átadási csomag (j lépés)
+
+Ami ide tartozik, és itt elkészíthető volt, az elkészült; ami jogi vagy adózási állítás lenne, azt **nem találtam ki**, hanem kérdésként a megfelelő szakembernek címeztem.
+
+| Téma | Döntés | Miért |
+|---|---|---|
+| Dokumentumok | Új lapok: [`architecture.md`](architecture.md), [`env-vars.md`](env-vars.md), [`licenses.md`](licenses.md), [`known-gaps.md`](known-gaps.md), [`handover.md`](handover.md), [`contract-annex-outline.md`](contract-annex-outline.md); a README hiánylistája ezekre hivatkozik | Az átadás egy helyről indul, és semmit nem kell emlékezetből tudni |
+| Licenc-leltár | A Dart-csomagok táblázatát a `tool/licenses.py` generálja a pub gyorsítótár LICENSE szövegeiből (a gyártási függőségi fa 91 csomagja: BSD-3-Clause 68, MIT 16, Apache-2.0 7, `UNKNOWN` nincs); a többi (betűk, képek, eszközök, szolgáltatások) kézzel írt, forrással | A kézzel írt lista elavul; a generált újrafuttatható. A felismerés a szabványos szövegen alapul, az `UNKNOWN`-t embernek kell olvasnia; **nem jogi vélemény** |
+| Jogi szövegek | Nincs ÁSZF, adatkezelési tájékoztató vagy szerződés a repóban. A [`known-gaps.md` 3. része](known-gaps.md) a kérdéslistát és a **tételes adatleltárat** adja (mit gyűjt az app, hol van, mely harmadik felek), a [`contract-annex-outline.md`](contract-annex-outline.md) a szerződés szerkezetét és kérdéseit | A felhasználó kérése: ne találjak ki jogi állítást; ügyvéd és könyvelő dönt |
+| AI-val készült kód | A tényállás (az AI-asszisztens írta a kód jelentős részét, a fejlesztő irányításával; a commitokban társszerzői sor) és a bizonytalanságok kérdésként a szerződés-vázlatban; a csökkentő lépések felsorolva | A szerzői jogi védettség bizonytalan; ezt nem szabad ígérettel elfedni |
+| Eredet-ellenőrzések | A nyomon követett fájlok és a teljes történet **nem** tartalmaz `kinyert_funkciok`-t; a teljes történeten a titokkeresés tiszta; nincs kulcs- vagy `.env` fájl a követett fájlok között (2026-10-21, 13 commit) | Az átadás előtt újrafuttatandó parancsok a [`handover.md`](handover.md) 4. részében |
+| `.env.example` | Újraírva a ténylegesen használt nevekre (a régi „Pages" és lépésszámos változat elavult volt) | A sablon az [`env-vars.md`](env-vars.md)-vel együtt a valóságot tükrözze |
+
+**Amit a lapok írása közben találtam:**
+
+- A README **hiánylistája és tesztszámai elavultak** voltak (például „a felület memóriabeli adatokkal fut", a 149 pgTAP-állítás): javítva; a tesztszámokat nem írom a README-be, mert elavulnak.
+- A `.env.example` még „Pages"-ről szólt, és olyan változókat (`POSTGRES_PASSWORD`) sorolt, amelyeket a telepítő maga generál: újraírva.
+- Két korábbi „ismert korlát" (rendelések a memóriában) az f lépésben megoldódott, de a szakaszuk még korlátként említette: megjelölve.
+- A függvények **CORS-fejléce `*`**: ma nem hiba (a függvények maguk hitelesítenek), de az MVP-ben szűkítendő; a hiánylistán van.
+- A `orders.user_id` **`on delete restrict`**: a rendelést leadott fiók közvetlenül nem törölhető, ezért a fiók törlése anonimizálást igényel; a hiánylistán van, a döntést jogász és könyvelő hozza.
+
+**Ismert korlátok:** a [`licenses.md`](licenses.md) az npm tranzitív csomagjainak és a Python segédcsomagok licencét, valamint a self-host csomag komponenseiét nem sorolja fel (a fejlesztői eszközök nem kerülnek az átadott termékbe; a komponenseket a megrendelő üzemelteti); a jogi és adózási kérdések
+megválaszolatlanok, ez a szakemberek dolga.
 
 ## Nyitott ellenőrzések
 
