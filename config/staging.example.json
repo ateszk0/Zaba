@@ -1,0 +1,5 @@
+{
+  "APP_ENV": "staging",
+  "SUPABASE_URL": "https://your-staging-host.example/supabase",
+  "SUPABASE_ANON_KEY": "public anon/publishable key of the self-hosted stack"
+}

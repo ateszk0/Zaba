@@ -1,0 +1,26 @@
+# --- Secrets: never commit ---------------------------------------------------
+.env
+.env.*
+!.env.example
+# Real dart-define files; only the *.example.json templates are tracked.
+config/*.json
+!config/*.example.json
+*.jks
+*.keystore
+key.properties
+
+# --- Third-party reference material -------------------------------------------
+# Decompiled / extracted code of other companies' apps must never be committed,
+# shipped in a handover package, or used as a source for Zaba code.
+# Keep such material outside this repository.
+kinyert_funkciok/
+
+# --- Tooling ------------------------------------------------------------------
+node_modules/
+.DS_Store
+supabase/.temp/
+supabase/.branches/
+
+# Python bytecode
+__pycache__/
+*.pyc

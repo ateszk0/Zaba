@@ -1,0 +1,5 @@
+{
+  "APP_ENV": "demo",
+  "SUPABASE_URL": "https://your-project-ref.supabase.co",
+  "SUPABASE_ANON_KEY": "public anon/publishable key of the hosted demo project"
+}
