@@ -35,7 +35,9 @@ print(origin, ("wss" if parsed.scheme == "https" else "ws") + "://" + parsed.net
 PY
 )
 
-out="$repo/app/build/demo/$which"
+# Where the build goes. Only tool/lan_preview.sh sets ZABA_BUILD_OUT, so that a
+# build for phones on the home network never replaces the one that gets deployed.
+out="${ZABA_BUILD_OUT:-$repo/app/build/demo/$which}"
 rm -rf "$out"
 cd "$repo/app"
 # --no-web-resources-cdn: the rendering engine (CanvasKit) comes from our own host,

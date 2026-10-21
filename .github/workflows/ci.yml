@@ -116,7 +116,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7.0.1
 
-      - run: shellcheck -x -S warning deploy/selfhost/*.sh deploy/demo/*.sh tool/android/*.sh
+      - run: shellcheck -x -S warning deploy/selfhost/*.sh deploy/demo/*.sh tool/android/*.sh tool/*.sh
       - name: Python scripts compile
         run: python3 -m py_compile tool/*.py tool/brand/*.py supabase/tests/*.py
 

@@ -226,11 +226,32 @@ A teljes eljárás: [`demo-environment.md`](demo-environment.md).
 
 **Ismert korlátok:** a felhős Supabase-en és a Cloudflare-en még nem futott semmi (a te fiókjaid kellenek); valódi telefonon (iPhone Safari, Android Chrome, az Android app) nem próbáltam; az iOS biztonságos terület és billentyűzet az i lépés.
 
+## Eszközellenőrzés (i lépés)
+
+A telefonos próbát te végzed (nálam nincs iPhone, Android Chrome és valódi Android készülék), én az ellenőrző listát és a hozzá szükséges eszközöket adom: [`test-checklist.md`](test-checklist.md).
+Ami ide tartozik és itt kipróbálható volt, azt kipróbáltam.
+
+| Téma | Döntés | Miért |
+|---|---|---|
+| Biztonságos terület | Az `index.html`-ből **kikerült a `viewport-fit=cover`** | A Flutter web nem adja át a böngésző `env(safe-area-inset-*)` értékeit az appnak: emulált 47 px felső és 34 px alsó beszúrással az elrendezés pixelre azonos maradt. A `cover` így az alsó sávot a home-jelző, fekvőben az oldalakat a notch alá tolná. `cover` nélkül a böngésző a tartalmat a biztonságos területen belül helyezi el, a maradék sávot az oldal háttérszínével tölti ki (a WebKit szerint; 2017-es forrás). **iPhone-on nem tesztelt** |
+| Termékkártya | Az ár és a mennyiségválasztó `Row` helyett `Wrap`-ben: ahol elfér, ugyanúgy néz ki, ahol nem, a vezérlő új sorba kerül | 320 px széles kijelzőn a sor 22 px-szel kilógott (és a release build ezt némán levágja) |
+| Kis kijelző, fekvő, nagy betű | Automatikus teszt (`app/test/small_screens_test.dart`): 320 × 568, ugyanez 1,3-szoros betűvel, 844 × 390 fekvő, 390 × 844 2-szeres betűvel; a vásárlói út a kosártól a követésig, az étlap, a termék-lap, a profil, a belépés és a regisztráció | A teszt a hibás kártyával elbukik (22, 42 és 17 px-es túlcsordulás), a javítottal zöld. A `pumpZaba` és a `reachCheckout` kapott `screen` és `textScale` paramétert, az alapértelmezés változatlan |
+| Előnézet telefonon | `tool/lan_preview.sh`: az app és az admin a gépről, a helyi Supabase ellen, ugyanazokkal a fejlécekkel (`wrangler dev`), a Wi-Fi címen; a `app/build/lan` mappába épít, **soha nem** az `app/build/demo`-ba (az megy fel), amit a `build-web.sh` új `ZABA_BUILD_OUT` változója tesz lehetővé | Fiókok nélkül, a telepítés előtt kipróbálható telefonon; a telepítés előtt derüljenek ki a hibák. Sima http a helyi hálózaton, helyi fejlesztői kulcsokkal és fiókokkal: csak saját telefonra |
+
+**Amit a tesztelés megtalált:**
+
+- **A biztonságos terület** (fent): ez a terv egyik kiemelt kockázata volt, és igazolódott.
+- **A termékkártya túlcsordulása** kis kijelzőn (fent).
+- A **VPN**-en futó gépen az alapértelmezett útvonal címe (`ip route get`) a VPN címe, amit telefon nem ér el: a `lan_preview.sh` ezért a valódi hálózati kártyákat nézi (loopback, Docker, hidak, VPN-alagutak nélkül), és ha több marad, címet kér.
+- Két `wrangler dev` **ugyanazon a belső porton** ütközik (`Address already in use`): példányonként külön `--inspector-port` kell. A script a másodikat is megvárja, és ha egyik sem indul, hibával áll meg.
+- A háttérben futó `wrangler` **gyerekfolyamatai** egy egyszerű `kill` után életben maradnak (az `npx` → `node` → `workerd` lánc): a script a teljes fát leállítja kilépéskor.
+
+**Ismert korlátok:** a telefonos lista egyetlen sora sem futott valódi eszközön (az iPhone Safari, az Android Chrome és az APK a te dolgod); a `viewport-fit` változtatás hatása iPhone-on nem tesztelt; a billentyűzet (a kártyaoldalon és a keresésen) csak a lista szerint ellenőrizhető.
+
 ## Nyitott ellenőrzések
 
-- **(i) iOS Safari.** Biztonságos terület (notch, alsó sáv) kezelése a Flutter webben, billentyűzet viselkedése a
-  checkout űrlapon és a keresésen, kezdőképernyős (standalone) mód. A `viewport-fit=cover`, a splash és a manifest
-  megvan, a viselkedés valódi telefonon ellenőrizendő.
+- **(i) iOS Safari.** A biztonságos terület kezelése (a `viewport-fit=cover` kikerült, lásd fent: a hatása iPhone-on ellenőrizendő), a billentyűzet
+  viselkedése a pénztár űrlapon, a kártyaoldalon és a keresésen, a kezdőképernyős (standalone) mód. A pontos lépések: [`test-checklist.md`](test-checklist.md).
 - **(b+) Realtime a Cloudflare Tunnelen.** A WebSocket átmegy-e, nem igazolt; tartalék az 5 mp-es polling.
 - **(h) A felhős demó.** A `setup-supabase.sh`, a `deploy-web.sh` és a két workflow a te fiókjaiddal próbálható ki; az első telepítés után a
   `tool/check_demo.py` mutatja meg, mi hiányzik.

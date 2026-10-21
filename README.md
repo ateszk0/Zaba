@@ -20,8 +20,9 @@ teljes vásárlási úton. Az architektúra úgy épül, hogy az MVP-be **bőví
 | e | Kosár a szerver árazásával, kiszállítási zónák és idősávok a Supabase-ből, mentett kosár | kész |
 | f | Rendelés leadása és fake fizetés a szerveren (Edge Function-ök, aláírt webhook), élő rendelés-követés | kész |
 | g | Mini admin (Flutter web: belépés, élő rendeléslista, állapotváltás, audit napló), szimulált értesítések a vásárlónál | kész |
-| h | Demó környezet: Cloudflare (app, admin, APK letöltés) és Supabase Free, szigorú fejlécek, aláírt Android APK, napi életben tartás | kész és helyben tesztelt (emulátoron az APK is); a felhős fiókokon még nem futott: jóváhagyásra vár |
-| i–j | Eszközellenőrzés (telefonok), átadási csomag | nincs |
+| h | Demó környezet: Cloudflare (app, admin, APK letöltés) és Supabase Free, szigorú fejlécek, aláírt Android APK, napi életben tartás | kész és helyben tesztelt (emulátoron az APK is); a felhős fiókokon még nem futott |
+| i | Eszközellenőrzés: telefonos ellenőrző lista, helyi hálózati előnézet, kis kijelzős tesztek, iPhone biztonságos terület | kész a részem; a listát te futtatod a telefonokon (iPhone Safari, Android Chrome, APK): jóváhagyásra vár |
+| j | Átadási csomag | nincs |
 | k | Végleges logó | nincs |
 
 ## Helyi indítás
@@ -116,5 +117,6 @@ A titkok sosem kerülnek a repóba: lásd `.env.example`. A kliensbe (web build,
 - [`docs/data-model.md`](docs/data-model.md): ER-diagram, a rendelés állapotgépe, ki mit írhat
 - [`docs/payment-flow.md`](docs/payment-flow.md): a fizetés sorozatdiagramja, mi igazi és mi szimulált, éles szolgáltatóra váltás
 - [`docs/demo-environment.md`](docs/demo-environment.md): a megrendelőnek adható demó telepítése (Cloudflare, Supabase Free, Android APK), amit te csinálsz meg
+- [`docs/test-checklist.md`](docs/test-checklist.md): a telefonos ellenőrző lista (iPhone Safari, Android Chrome, Android-app), és az előnézet a saját gépről (`tool/lan_preview.sh`)
 - [`docs/image-credits.md`](docs/image-credits.md): a termékfotók forrása és licence
 - [`deploy/selfhost/README.md`](deploy/selfhost/README.md): a saját szerveres staging telepítése és üzemeltetése

@@ -17,8 +17,15 @@ final total = forint(2 * 2790 + 990);
 Future<void> reachCheckout(
   WidgetTester tester, {
   List<Override> overrides = const [],
+  Size screen = const Size(390, 844),
+  double textScale = 1,
 }) async {
-  await pumpZaba(tester, overrides: overrides);
+  await pumpZaba(
+    tester,
+    overrides: overrides,
+    screen: screen,
+    textScale: textScale,
+  );
   await enterAddress(tester);
   await tester.tap(find.byTooltip('Hozzáadás').first);
   await tester.pumpAndSettle();

@@ -5,9 +5,14 @@
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
-  <!-- viewport-fit=cover lets the page use the whole screen on an iPhone with a
-       notch; the app keeps its content out of the unsafe areas itself. -->
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- No viewport-fit=cover on purpose. Without it the browser lays the page out
+       inside the safe area (clear of the notch and the home indicator) and fills
+       the strip left over with the page background (splash.css: cream). With it
+       the page runs under the notch, and Flutter's web engine passes no
+       safe-area insets on to the app (checked with an emulated 47 / 34 px inset:
+       the layout does not move), so the bottom navigation would sit under the
+       home indicator and the sides would be cut off in landscape. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Zaba - ételrendelő demó">
   <meta name="theme-color" content="#2F7A3E">
 

@@ -48,25 +48,35 @@ class ProductCard extends ConsumerWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: AppSpacing.sm),
-                    Row(
+                    // Price left, button right. On a narrow screen (or with a big
+                    // system font) the quantity stepper does not fit next to the
+                    // price, so it moves to a line of its own instead of being cut.
+                    Wrap(
+                      alignment: WrapAlignment.spaceBetween,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      runSpacing: AppSpacing.xs,
                       children: [
-                        Text(
-                          product.price.format(),
-                          style: textTheme.titleMedium?.copyWith(
-                            fontFeatures: AppTypography.priceFeatures,
-                          ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              product.price.format(),
+                              style: textTheme.titleMedium?.copyWith(
+                                fontFeatures: AppTypography.priceFeatures,
+                              ),
+                            ),
+                            if (product.vegetarian) ...[
+                              const SizedBox(width: AppSpacing.sm),
+                              Icon(
+                                Icons.eco_rounded,
+                                size: 18,
+                                color: AppColors.green700,
+                                semanticLabel: AppLocalizations.of(context)
+                                    .productVegetarian,
+                              ),
+                            ],
+                          ],
                         ),
-                        if (product.vegetarian) ...[
-                          const SizedBox(width: AppSpacing.sm),
-                          Icon(
-                            Icons.eco_rounded,
-                            size: 18,
-                            color: AppColors.green700,
-                            semanticLabel: AppLocalizations.of(context)
-                                .productVegetarian,
-                          ),
-                        ],
-                        const Spacer(),
                         if (quantity == 0)
                           IconButton.filled(
                             onPressed: () => cart.add(product.id),

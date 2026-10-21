@@ -137,7 +137,7 @@ update public.delivery_slots s set booked =
 - Aktív-e a projekt (a Free csomag egy hét inaktivitás után szüneteltet; a napi `keepalive` ezt megakadályozza, de a bemutató előtti napon
   nézd meg a Supabase dashboardot, és futtasd le egyszer kézzel a workflow-t).
 - Betölt-e az app a telefonodon, belép-e a demó fiókkal, le lehet-e adni és kifizetni egy rendelést, megjelenik-e az adminban, és a váltás
-  megjelenik-e a telefonon. (A telefonos ellenőrző lista az i lépésben készül el.)
+  megjelenik-e a telefonon. A pontos lépések: [`test-checklist.md`](test-checklist.md); ugyanez a telepítés előtt is kipróbálható a saját gépről a `tool/lan_preview.sh`-val.
 - A DEMÓ szalag látszik mindenhol.
 
 ## Ingyenes szint, limitek (2026. október, a gyártók dokumentációja alapján)
@@ -152,7 +152,7 @@ update public.delivery_slots s set booked =
 - A **felhős Supabase projekten és a Cloudflare-en még nem futott semmi** (ehhez a te fiókjaid kellenek). Helyben teszteltem: a lokális Supabase stacken
   és a Cloudflare ugyanazon `workerd` futtatókörnyezetével (`wrangler dev`) a ténylegesen kiadott fájlokat és fejléceket.
 - iPhone Safari és Android Chrome böngészőben nem próbáltam; az Android app egy emulátoron futott (belépés, kosár, újraindítás), valódi telefonon nem.
-- Az iOS biztonságos terület (notch, alsó sáv), a billentyűzet és a kezdőképernyős mód ellenőrzése a telefonos lista (i lépés) dolga.
+- Az iOS biztonságos terület (notch, alsó sáv), a billentyűzet és a kezdőképernyős mód ellenőrzése a [telefonos lista](test-checklist.md) dolga. A `viewport-fit=cover` kikerült (a Flutter web nem veszi át a böngésző safe-area értékeit), a hatása iPhone-on nem tesztelt.
 - Az app saját rendszerfontja a bundle-ölt betűkön kívül nincs (a Content-Security-Policy a külső tartalék betöltést tiltja): a
   Baloo 2 és az Inter latin és latin-kiterjesztett készletén kívüli karakter (emoji, cirill, kínai) egy **doboz** (□) lesz. Az étlap és a felület ilyet
   nem használ, de a vásárló megjegyzésében előfordulhat.

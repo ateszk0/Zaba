@@ -13,8 +13,9 @@ import 'package:zaba/features/catalog/domain/catalog_repository.dart';
 
 import 'test_catalog.dart';
 
-/// Pumps the whole app on a 390 x 844 phone screen with the small test catalog
-/// instead of the demo data.
+/// Pumps the whole app on a 390 x 844 phone screen (or the logical [screen]
+/// given, with the system font enlarged by [textScale]) with the small test
+/// catalog instead of the demo data.
 ///
 /// Signed in as the demo customer, unless [signedIn] is false: the checkout and
 /// the orders need an account, and most flows are about them.
@@ -24,10 +25,14 @@ Future<void> pumpZaba(
   DateTime? now,
   bool signedIn = true,
   CatalogRepository? catalog,
+  Size screen = const Size(390, 844),
+  double textScale = 1,
 }) async {
-  tester.view.physicalSize = const Size(1170, 2532);
+  tester.view.physicalSize = screen * 3;
   tester.view.devicePixelRatio = 3;
   addTearDown(tester.view.reset);
+  tester.platformDispatcher.textScaleFactorTestValue = textScale;
+  addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
 
   await tester.pumpWidget(
     ProviderScope(
