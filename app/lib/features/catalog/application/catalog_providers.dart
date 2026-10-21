@@ -59,9 +59,21 @@ final menuFilterProvider = NotifierProvider<MenuFilterNotifier, MenuFilter>(
 );
 
 /// Products after the current search, category, vegetarian and sort settings.
+/// The menu is only usable with its categories as well, so a failed category
+/// load fails this too.
 final visibleProductsProvider = Provider<AsyncValue<List<Product>>>((ref) {
   final filter = ref.watch(menuFilterProvider);
+  final categories = ref.watch(categoriesProvider);
+  if (categories.hasError) {
+    return AsyncValue.error(categories.error!, categories.stackTrace!);
+  }
   return ref
       .watch(productsProvider)
       .whenData((products) => applyMenuFilter(products, filter));
 });
+
+/// Loads the menu again after a failure.
+void reloadMenu(WidgetRef ref) {
+  ref.invalidate(categoriesProvider);
+  ref.invalidate(productsProvider);
+}

@@ -109,6 +109,23 @@ Kivitelezés és runbook: [`deploy/selfhost/`](../deploy/selfhost/README.md).
 
 **Mérés a c lépés után** (`flutter build web --release`, `supabase_flutter`-rel és az a2–a3 funkcióival): `main.dart.js` 3,47 MB nyers, 1,00 MB gzip -9 (az (a) lépés után 2,9 / 0,83 MB; a növekedés nem csak a Supabase-klienstől van).
 
+## Katalógus (d lépés)
+
+| Téma | Döntés | Miért |
+|---|---|---|
+| Olvasás | `SupabaseCatalogRepository`: a `categories` tábla és a `catalog_products` nézet (az aktuális árral), vendégként is; az inaktív sorokat az RLS rejti el | Az ár és az étlap forrása a szerver, a kliens nem számol árat |
+| Keresés | **Marad a kliensben** (ékezetfüggetlen, `foldText`), nem szerveroldali `unaccent`, ellentétben az eredeti tervvel | Az egész étlap (45 termék) egyszer letöltődik, így a találat azonnali, nincs kérés minden betűnél. Ha az étlap több száz tételre nő (MVP), akkor `unaccent` + `pg_trgm` a szerveren |
+| Ismeretlen allergénkód | A betöltés hibával áll meg, nem hagyja ki csendben | Az allergén-információ biztonsági adat; egy elavult app ne mutasson hiányos allergénlistát |
+| Hiba | Ha a termékek vagy a kategóriák betöltése bukik, az étlap hibanézetet mutat, az „Újra" mindkettőt újratölti | Valódi hálózaton előfordul; korábban a kategóriahiba csendben elmaradt |
+| Képek | Változatlanul az app csomagjában (azonos eredet), az `image_path` csak a fájlnév | Nincs CORS, nem terheli a Supabase egress-ét |
+
+**Amit a tesztelés megtalált:**
+
+- A `postgrest-dart` `order()` alapból **csökkenő**: a kategóriák fordított sorrendben jöttek (Italok elöl). Egy integrációs teszt találta meg, ami a szerverről visszaolvasott étlapot mezőről mezőre összeveti a Dart demóadatokkal (a seed ebből generálódik). Az irányok most kifejezettek.
+- Egy kategória-betöltési hiba csendben elmaradt (üres chip-sor, az étlap rendben) – most a teljes étlapot hibára állítja.
+
+**Nem része:** szerkeszthető étlap, készletkezelés (az `inventory` tábla előkészített), képfeltöltés – MVP.
+
 ## Nyitott ellenőrzések
 
 - **(h) CanvasKit forrása.** Az alapértelmezett web build a CanvasKitet a Google CDN-jéről

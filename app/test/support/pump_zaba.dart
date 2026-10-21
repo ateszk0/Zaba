@@ -9,6 +9,7 @@ import 'package:zaba/features/auth/data/in_memory_auth_repository.dart';
 import 'package:zaba/features/payment/application/payment_providers.dart';
 import 'package:zaba/features/catalog/application/catalog_providers.dart';
 import 'package:zaba/features/catalog/data/in_memory_catalog_repository.dart';
+import 'package:zaba/features/catalog/domain/catalog_repository.dart';
 
 import 'test_catalog.dart';
 
@@ -22,6 +23,7 @@ Future<void> pumpZaba(
   List<Override> overrides = const [],
   DateTime? now,
   bool signedIn = true,
+  CatalogRepository? catalog,
 }) async {
   tester.view.physicalSize = const Size(1170, 2532);
   tester.view.devicePixelRatio = 3;
@@ -31,10 +33,11 @@ Future<void> pumpZaba(
     ProviderScope(
       overrides: [
         catalogRepositoryProvider.overrideWithValue(
-          const InMemoryCatalogRepository(
-            categoryList: testCategories,
-            productList: testProducts,
-          ),
+          catalog ??
+              const InMemoryCatalogRepository(
+                categoryList: testCategories,
+                productList: testProducts,
+              ),
         ),
         // A pinned clock keeps the delivery slots predictable, and the fake
         // payment provider answers at once.

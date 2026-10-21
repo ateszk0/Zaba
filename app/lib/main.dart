@@ -7,6 +7,8 @@ import 'app.dart';
 import 'core/config/app_config.dart';
 import 'features/auth/application/auth_providers.dart';
 import 'features/auth/data/supabase_auth_repository.dart';
+import 'features/catalog/application/catalog_providers.dart';
+import 'features/catalog/data/supabase_catalog_repository.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,11 +26,15 @@ Future<void> main() async {
         detectSessionInUri: false,
       ),
     );
-    overrides.add(
+    final client = Supabase.instance.client;
+    overrides.addAll([
       authRepositoryProvider.overrideWith(
-        (ref) => SupabaseAuthRepository(Supabase.instance.client.auth),
+        (ref) => SupabaseAuthRepository(client.auth),
       ),
-    );
+      catalogRepositoryProvider.overrideWith(
+        (ref) => SupabaseCatalogRepository(client),
+      ),
+    ]);
   }
 
   runApp(ProviderScope(overrides: overrides, child: const ZabaApp()));
