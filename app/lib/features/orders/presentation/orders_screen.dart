@@ -8,6 +8,7 @@ import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../auth/application/auth_providers.dart';
+import '../../notifications/application/notification_providers.dart';
 import '../application/order_providers.dart';
 import '../domain/order.dart';
 import 'widgets/order_status_chip.dart';
@@ -36,8 +37,24 @@ class OrdersScreen extends ConsumerWidget {
     }
 
     final orders = ref.watch(ordersProvider);
+    final unread = ref.watch(
+      notificationsProvider.select((state) => state.unread),
+    );
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.navOrders)),
+      appBar: AppBar(
+        title: Text(l10n.navOrders),
+        actions: [
+          IconButton(
+            tooltip: l10n.notificationsTooltip,
+            icon: Badge(
+              isLabelVisible: unread > 0,
+              label: Text('$unread'),
+              child: const Icon(Icons.notifications_none_rounded),
+            ),
+            onPressed: () => context.push('/notifications'),
+          ),
+        ],
+      ),
       body: orders.when(
         loading: () => const LoadingView(),
         error: (error, stackTrace) =>

@@ -1240,6 +1240,360 @@ abstract class AppLocalizations {
   /// **'Valami nem sikerült. Próbáld újra.'**
   String get authErrorUnknown;
 
+  /// No description provided for @notificationsTitle.
+  ///
+  /// In hu, this message translates to:
+  /// **'Értesítések'**
+  String get notificationsTitle;
+
+  /// No description provided for @notificationsTooltip.
+  ///
+  /// In hu, this message translates to:
+  /// **'Értesítések'**
+  String get notificationsTooltip;
+
+  /// No description provided for @notificationsEmptyTitle.
+  ///
+  /// In hu, this message translates to:
+  /// **'Még nincs értesítésed'**
+  String get notificationsEmptyTitle;
+
+  /// No description provided for @notificationsEmptyBody.
+  ///
+  /// In hu, this message translates to:
+  /// **'Ha változik a rendelésed állapota, itt is megjelenik.'**
+  String get notificationsEmptyBody;
+
+  /// No description provided for @notificationsDemoNote.
+  ///
+  /// In hu, this message translates to:
+  /// **'Demó: az értesítések az appon belül jelennek meg, telefonos push értesítés nincs.'**
+  String get notificationsDemoNote;
+
+  /// No description provided for @notificationDismiss.
+  ///
+  /// In hu, this message translates to:
+  /// **'Bezárás'**
+  String get notificationDismiss;
+
+  /// No description provided for @notificationOrder.
+  ///
+  /// In hu, this message translates to:
+  /// **'Rendelés {number}'**
+  String notificationOrder(String number);
+
+  /// No description provided for @notifReceivedTitle.
+  ///
+  /// In hu, this message translates to:
+  /// **'Megkaptuk a rendelésed'**
+  String get notifReceivedTitle;
+
+  /// No description provided for @notifReceivedBody.
+  ///
+  /// In hu, this message translates to:
+  /// **'A fizetés megvan, a konyha hamarosan elkezdi.'**
+  String get notifReceivedBody;
+
+  /// No description provided for @notifPreparingTitle.
+  ///
+  /// In hu, this message translates to:
+  /// **'Készül a rendelésed'**
+  String get notifPreparingTitle;
+
+  /// No description provided for @notifPreparingBody.
+  ///
+  /// In hu, this message translates to:
+  /// **'Elkezdtük elkészíteni az ételeidet.'**
+  String get notifPreparingBody;
+
+  /// No description provided for @notifOutForDeliveryTitle.
+  ///
+  /// In hu, this message translates to:
+  /// **'Úton a futár'**
+  String get notifOutForDeliveryTitle;
+
+  /// No description provided for @notifOutForDeliveryBody.
+  ///
+  /// In hu, this message translates to:
+  /// **'A rendelésed már úton van hozzád.'**
+  String get notifOutForDeliveryBody;
+
+  /// No description provided for @notifDeliveredTitle.
+  ///
+  /// In hu, this message translates to:
+  /// **'Kiszállítottuk a rendelésed'**
+  String get notifDeliveredTitle;
+
+  /// No description provided for @notifDeliveredBody.
+  ///
+  /// In hu, this message translates to:
+  /// **'Jó étvágyat!'**
+  String get notifDeliveredBody;
+
+  /// No description provided for @notifCancelledTitle.
+  ///
+  /// In hu, this message translates to:
+  /// **'A rendelésed lemondva'**
+  String get notifCancelledTitle;
+
+  /// No description provided for @notifCancelledBody.
+  ///
+  /// In hu, this message translates to:
+  /// **'A rendelés nem kerül elkészítésre.'**
+  String get notifCancelledBody;
+
+  /// No description provided for @notifCancelledRefundedBody.
+  ///
+  /// In hu, this message translates to:
+  /// **'A rendelés lemondva, a kifizetett összeget visszatérítjük.'**
+  String get notifCancelledRefundedBody;
+
+  /// No description provided for @adminTitle.
+  ///
+  /// In hu, this message translates to:
+  /// **'Zaba kezelőfelület'**
+  String get adminTitle;
+
+  /// No description provided for @adminBanner.
+  ///
+  /// In hu, this message translates to:
+  /// **'DEMÓ · kezelőfelület · kitalált adatok'**
+  String get adminBanner;
+
+  /// No description provided for @adminLoginTitle.
+  ///
+  /// In hu, this message translates to:
+  /// **'Munkatársi belépés'**
+  String get adminLoginTitle;
+
+  /// No description provided for @adminLoginBody.
+  ///
+  /// In hu, this message translates to:
+  /// **'A konyha és az üzemeltetés munkatársainak.'**
+  String get adminLoginBody;
+
+  /// No description provided for @adminDemoLogin.
+  ///
+  /// In hu, this message translates to:
+  /// **'Belépés demó munkatársként'**
+  String get adminDemoLogin;
+
+  /// No description provided for @adminNoAccessTitle.
+  ///
+  /// In hu, this message translates to:
+  /// **'Nincs jogosultságod'**
+  String get adminNoAccessTitle;
+
+  /// No description provided for @adminNoAccessBody.
+  ///
+  /// In hu, this message translates to:
+  /// **'Ezzel a fiókkal nem lehet belépni a kezelőfelületre. Kérd meg egy adminisztrátort, hogy vegyen fel munkatársnak.'**
+  String get adminNoAccessBody;
+
+  /// No description provided for @adminRoleAdmin.
+  ///
+  /// In hu, this message translates to:
+  /// **'Admin'**
+  String get adminRoleAdmin;
+
+  /// No description provided for @adminRoleOperator.
+  ///
+  /// In hu, this message translates to:
+  /// **'Konyha'**
+  String get adminRoleOperator;
+
+  /// No description provided for @adminOrdersTitle.
+  ///
+  /// In hu, this message translates to:
+  /// **'Rendelések'**
+  String get adminOrdersTitle;
+
+  /// No description provided for @adminOrderCount.
+  ///
+  /// In hu, this message translates to:
+  /// **'{count} rendelés'**
+  String adminOrderCount(int count);
+
+  /// No description provided for @adminOrderPlaced.
+  ///
+  /// In hu, this message translates to:
+  /// **'Leadva: {time} · {count} tétel'**
+  String adminOrderPlaced(String time, int count);
+
+  /// No description provided for @adminFilterActive.
+  ///
+  /// In hu, this message translates to:
+  /// **'Aktív'**
+  String get adminFilterActive;
+
+  /// No description provided for @adminFilterAwaitingPayment.
+  ///
+  /// In hu, this message translates to:
+  /// **'Fizetésre vár'**
+  String get adminFilterAwaitingPayment;
+
+  /// No description provided for @adminFilterClosed.
+  ///
+  /// In hu, this message translates to:
+  /// **'Lezárt'**
+  String get adminFilterClosed;
+
+  /// No description provided for @adminFilterAll.
+  ///
+  /// In hu, this message translates to:
+  /// **'Mind'**
+  String get adminFilterAll;
+
+  /// No description provided for @adminOrdersEmptyTitle.
+  ///
+  /// In hu, this message translates to:
+  /// **'Nincs ilyen rendelés'**
+  String get adminOrdersEmptyTitle;
+
+  /// No description provided for @adminOrdersEmptyBody.
+  ///
+  /// In hu, this message translates to:
+  /// **'Ha új rendelés érkezik, itt azonnal megjelenik.'**
+  String get adminOrdersEmptyBody;
+
+  /// No description provided for @adminSelectOrder.
+  ///
+  /// In hu, this message translates to:
+  /// **'Válassz egy rendelést a részletekhez.'**
+  String get adminSelectOrder;
+
+  /// No description provided for @adminOrderNotFound.
+  ///
+  /// In hu, this message translates to:
+  /// **'Ez a rendelés nem található.'**
+  String get adminOrderNotFound;
+
+  /// No description provided for @adminActionsTitle.
+  ///
+  /// In hu, this message translates to:
+  /// **'Állapot léptetése'**
+  String get adminActionsTitle;
+
+  /// No description provided for @adminActionPreparing.
+  ///
+  /// In hu, this message translates to:
+  /// **'Készítés megkezdése'**
+  String get adminActionPreparing;
+
+  /// No description provided for @adminActionOutForDelivery.
+  ///
+  /// In hu, this message translates to:
+  /// **'Kiszállítás indítása'**
+  String get adminActionOutForDelivery;
+
+  /// No description provided for @adminActionDelivered.
+  ///
+  /// In hu, this message translates to:
+  /// **'Kiszállítva'**
+  String get adminActionDelivered;
+
+  /// No description provided for @adminNoActions.
+  ///
+  /// In hu, this message translates to:
+  /// **'Ezen a rendelésen már nincs további teendő.'**
+  String get adminNoActions;
+
+  /// No description provided for @adminAwaitingPaymentHint.
+  ///
+  /// In hu, this message translates to:
+  /// **'A rendelés fizetésre vár: a konyha a fizetés után kezdheti el. Állapotot nem léptethetsz, csak lemondhatod.'**
+  String get adminAwaitingPaymentHint;
+
+  /// No description provided for @adminCancelBodyPaid.
+  ///
+  /// In hu, this message translates to:
+  /// **'A vásárló kifizette, ezért a fizetés visszatérítésre kerül.'**
+  String get adminCancelBodyPaid;
+
+  /// No description provided for @adminCancelBodyUnpaid.
+  ///
+  /// In hu, this message translates to:
+  /// **'A rendelés még nincs kifizetve.'**
+  String get adminCancelBodyUnpaid;
+
+  /// No description provided for @adminActionNotAllowed.
+  ///
+  /// In hu, this message translates to:
+  /// **'Ez az állapotváltás most nem engedélyezett, talán közben megváltozott a rendelés.'**
+  String get adminActionNotAllowed;
+
+  /// No description provided for @adminActionFailed.
+  ///
+  /// In hu, this message translates to:
+  /// **'A művelet nem sikerült. Próbáld újra.'**
+  String get adminActionFailed;
+
+  /// No description provided for @adminHistoryTitle.
+  ///
+  /// In hu, this message translates to:
+  /// **'Előzmények'**
+  String get adminHistoryTitle;
+
+  /// No description provided for @adminHistoryPlaced.
+  ///
+  /// In hu, this message translates to:
+  /// **'Rendelés leadva'**
+  String get adminHistoryPlaced;
+
+  /// No description provided for @adminActorCustomer.
+  ///
+  /// In hu, this message translates to:
+  /// **'vásárló'**
+  String get adminActorCustomer;
+
+  /// No description provided for @adminActorOperator.
+  ///
+  /// In hu, this message translates to:
+  /// **'konyha'**
+  String get adminActorOperator;
+
+  /// No description provided for @adminActorPayment.
+  ///
+  /// In hu, this message translates to:
+  /// **'fizetés'**
+  String get adminActorPayment;
+
+  /// No description provided for @adminAuditTooltip.
+  ///
+  /// In hu, this message translates to:
+  /// **'Naplózott műveletek'**
+  String get adminAuditTooltip;
+
+  /// No description provided for @adminAuditTitle.
+  ///
+  /// In hu, this message translates to:
+  /// **'Naplózott műveletek'**
+  String get adminAuditTitle;
+
+  /// No description provided for @adminAuditEmpty.
+  ///
+  /// In hu, this message translates to:
+  /// **'Még nincs naplózott művelet.'**
+  String get adminAuditEmpty;
+
+  /// No description provided for @adminAuditSetStatus.
+  ///
+  /// In hu, this message translates to:
+  /// **'Állapotváltás: {from} → {to}'**
+  String adminAuditSetStatus(String from, String to);
+
+  /// No description provided for @adminAuditOther.
+  ///
+  /// In hu, this message translates to:
+  /// **'{action}'**
+  String adminAuditOther(String action);
+
+  /// No description provided for @adminBackToOrders.
+  ///
+  /// In hu, this message translates to:
+  /// **'Vissza a rendelésekhez'**
+  String get adminBackToOrders;
+
   /// No description provided for @imageCreditsTitle.
   ///
   /// In hu, this message translates to:

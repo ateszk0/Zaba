@@ -173,6 +173,31 @@ A teljes folyamat és a sorozatdiagram: [`payment-flow.md`](payment-flow.md).
 
 **Ismert korlátok:** lásd [`payment-flow.md`](payment-flow.md). Nem tesztelt: a felhős Supabase Edge Functions futása (a `demo` környezet, h lépés), a Proxmox VM és a Cloudflare Tunnel (a WebSocket a Cloudflare-en át).
 
+## Kezelőfelület és értesítések (g lépés)
+
+| Téma | Döntés | Miért |
+|---|---|---|
+| Admin | Flutter web, második belépési pont (`lib/main_admin.dart`), külön build (`flutter build web -t lib/main_admin.dart`); a téma, a nyelvi szövegek, a belépés és a rendelés-modell közös | Egy stack, egy nyelv, egy CI. Az admin szövegei és kódja csak az admin csomagjában vannak: ellenőrizve, hogy a vásárlói build nem tartalmazza őket (a fa-nyesés eltávolítja) |
+| Belépés | Csak belépés, regisztráció nincs; a munkatársi fiókot a titkos kulccsal futó `tool/create_staff_user.py` hozza létre. Aki belép, de nem munkatárs (`admin_users`), a „Nincs jogosultságod" képernyőt kapja, kijelentkezési gombbal | A jogosultság a szerveren dől el (RLS és a függvények), az oldal csak ezt mutatja |
+| Szerepek | `operator` (konyha): rendelések; `admin`: ezen felül a naplózott műveletek. Az audit napló olvasása RLS-sel az `admin`-é: az operátor üres listát kap, nem hibát | A jogot az adatbázis adja, a gomb elrejtése csak kényelem |
+| Léptetés | A gombok az `order_status_transitions` táblából jönnek (operátorra engedett lépések), a léptetést az `admin_set_order_status` végzi: jogosultság, állapotgép, `audit_log`. A Dart oldalon nincs átmenet-logika | Az állapotgép egyetlen helyen él |
+| Adatminimalizálás | Az admin a rendelés adatait látja (tételek, cím, megjegyzés, idősáv, fizetés), a vásárló nevét és e-mail-címét nem: a `profiles` táblát csak a tulajdonosa olvashatja | A konyhának ennyi kell |
+| Élő frissítés | A lista és a rendelés a Realtime-ra iratkozik (a vásárlóéval azonos `liveQuery`: tartalék polling és utólagos lekérdezés); egy művelet után azonnal újra is lekérdez | Az újonnan beérkező rendelés újratöltés nélkül megjelenik (böngészőben ellenőrizve) |
+| Elrendezés | 900 px-től lista és részlet egymás mellett, alatta külön oldalak | Asztali gépen a konyha egyszerre látja a sort és a rendelést; telefonon is használható |
+| Demó munkatárs gomb | Csak ha a build kapja az `ADMIN_DEMO_EMAIL` / `ADMIN_DEMO_PASSWORD` értéket; **a vásárlónak adott linkhez szánt buildbe ne kerüljön** | A jelszó egy nyilvános weboldalban ülne, és bárki kezelhetné az oldalt. A vásárlói buildből a fa-nyesés kiveszi (ellenőrizve), az adminból nem |
+| Értesítések | `NotificationSender` interfész, a demóban `InAppNotifier`: egy sáv az app tetején (7 mp, koppintásra megnyitja a rendelést) és egy lista (`/notifications`, a Rendeléseim fülön a csengő, olvasatlan-számlálóval). A rendelés állapotának változásából keletkezik: az első betöltés nem hír, egy új rendelés megjelenése sem | Telefonos push és e-mail az MVP-ben ugyanezen interfész mögé kerül |
+
+**Ismert korlátok:**
+
+- Az értesítések csak addig élnek, amíg az app nyitva van (a lista legfeljebb 30 elem, nincs mentve), és csak akkor jönnek, ha az app fut. A valódi push az MVP-ben jön.
+- A vásárló saját lemondásáról is kap értesítést (a változásból nem derül ki, ki csinálta).
+- Az admin oldal csak backenddel működik: két külön app nem oszthat meg memóriabeli rendeléseket.
+- Az admin telepítése (`deploy-web.sh user@server admin`) és a Caddy `admin-staging` hostja a self-hosted kitben megvan, de a Proxmoxon és a Cloudflare Tunnelen **nem tesztelt**.
+- A munkatársak kezelése (felvétel, szerepkör-váltás) az MVP-ben kap felületet; most a parancssori eszköz.
+- A műveletek csak az állapotváltást naplózzák (`audit_log`); a belépéseket nem.
+
+**Méret (g után, `flutter build web --release`):** az admin `main.dart.js` 3,2 MB nyers, 0,94 MB gzip -9; a vásárlói app 3,4 MB, 1,03 MB.
+
 ## Nyitott ellenőrzések
 
 - **(h) CanvasKit forrása.** Az alapértelmezett web build a CanvasKitet a Google CDN-jéről

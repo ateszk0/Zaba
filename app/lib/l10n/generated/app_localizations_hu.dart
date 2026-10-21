@@ -658,6 +658,202 @@ class AppLocalizationsHu extends AppLocalizations {
   String get authErrorUnknown => 'Valami nem sikerült. Próbáld újra.';
 
   @override
+  String get notificationsTitle => 'Értesítések';
+
+  @override
+  String get notificationsTooltip => 'Értesítések';
+
+  @override
+  String get notificationsEmptyTitle => 'Még nincs értesítésed';
+
+  @override
+  String get notificationsEmptyBody =>
+      'Ha változik a rendelésed állapota, itt is megjelenik.';
+
+  @override
+  String get notificationsDemoNote =>
+      'Demó: az értesítések az appon belül jelennek meg, telefonos push értesítés nincs.';
+
+  @override
+  String get notificationDismiss => 'Bezárás';
+
+  @override
+  String notificationOrder(String number) {
+    return 'Rendelés $number';
+  }
+
+  @override
+  String get notifReceivedTitle => 'Megkaptuk a rendelésed';
+
+  @override
+  String get notifReceivedBody =>
+      'A fizetés megvan, a konyha hamarosan elkezdi.';
+
+  @override
+  String get notifPreparingTitle => 'Készül a rendelésed';
+
+  @override
+  String get notifPreparingBody => 'Elkezdtük elkészíteni az ételeidet.';
+
+  @override
+  String get notifOutForDeliveryTitle => 'Úton a futár';
+
+  @override
+  String get notifOutForDeliveryBody => 'A rendelésed már úton van hozzád.';
+
+  @override
+  String get notifDeliveredTitle => 'Kiszállítottuk a rendelésed';
+
+  @override
+  String get notifDeliveredBody => 'Jó étvágyat!';
+
+  @override
+  String get notifCancelledTitle => 'A rendelésed lemondva';
+
+  @override
+  String get notifCancelledBody => 'A rendelés nem kerül elkészítésre.';
+
+  @override
+  String get notifCancelledRefundedBody =>
+      'A rendelés lemondva, a kifizetett összeget visszatérítjük.';
+
+  @override
+  String get adminTitle => 'Zaba kezelőfelület';
+
+  @override
+  String get adminBanner => 'DEMÓ · kezelőfelület · kitalált adatok';
+
+  @override
+  String get adminLoginTitle => 'Munkatársi belépés';
+
+  @override
+  String get adminLoginBody => 'A konyha és az üzemeltetés munkatársainak.';
+
+  @override
+  String get adminDemoLogin => 'Belépés demó munkatársként';
+
+  @override
+  String get adminNoAccessTitle => 'Nincs jogosultságod';
+
+  @override
+  String get adminNoAccessBody =>
+      'Ezzel a fiókkal nem lehet belépni a kezelőfelületre. Kérd meg egy adminisztrátort, hogy vegyen fel munkatársnak.';
+
+  @override
+  String get adminRoleAdmin => 'Admin';
+
+  @override
+  String get adminRoleOperator => 'Konyha';
+
+  @override
+  String get adminOrdersTitle => 'Rendelések';
+
+  @override
+  String adminOrderCount(int count) {
+    return '$count rendelés';
+  }
+
+  @override
+  String adminOrderPlaced(String time, int count) {
+    return 'Leadva: $time · $count tétel';
+  }
+
+  @override
+  String get adminFilterActive => 'Aktív';
+
+  @override
+  String get adminFilterAwaitingPayment => 'Fizetésre vár';
+
+  @override
+  String get adminFilterClosed => 'Lezárt';
+
+  @override
+  String get adminFilterAll => 'Mind';
+
+  @override
+  String get adminOrdersEmptyTitle => 'Nincs ilyen rendelés';
+
+  @override
+  String get adminOrdersEmptyBody =>
+      'Ha új rendelés érkezik, itt azonnal megjelenik.';
+
+  @override
+  String get adminSelectOrder => 'Válassz egy rendelést a részletekhez.';
+
+  @override
+  String get adminOrderNotFound => 'Ez a rendelés nem található.';
+
+  @override
+  String get adminActionsTitle => 'Állapot léptetése';
+
+  @override
+  String get adminActionPreparing => 'Készítés megkezdése';
+
+  @override
+  String get adminActionOutForDelivery => 'Kiszállítás indítása';
+
+  @override
+  String get adminActionDelivered => 'Kiszállítva';
+
+  @override
+  String get adminNoActions => 'Ezen a rendelésen már nincs további teendő.';
+
+  @override
+  String get adminAwaitingPaymentHint =>
+      'A rendelés fizetésre vár: a konyha a fizetés után kezdheti el. Állapotot nem léptethetsz, csak lemondhatod.';
+
+  @override
+  String get adminCancelBodyPaid =>
+      'A vásárló kifizette, ezért a fizetés visszatérítésre kerül.';
+
+  @override
+  String get adminCancelBodyUnpaid => 'A rendelés még nincs kifizetve.';
+
+  @override
+  String get adminActionNotAllowed =>
+      'Ez az állapotváltás most nem engedélyezett, talán közben megváltozott a rendelés.';
+
+  @override
+  String get adminActionFailed => 'A művelet nem sikerült. Próbáld újra.';
+
+  @override
+  String get adminHistoryTitle => 'Előzmények';
+
+  @override
+  String get adminHistoryPlaced => 'Rendelés leadva';
+
+  @override
+  String get adminActorCustomer => 'vásárló';
+
+  @override
+  String get adminActorOperator => 'konyha';
+
+  @override
+  String get adminActorPayment => 'fizetés';
+
+  @override
+  String get adminAuditTooltip => 'Naplózott műveletek';
+
+  @override
+  String get adminAuditTitle => 'Naplózott műveletek';
+
+  @override
+  String get adminAuditEmpty => 'Még nincs naplózott művelet.';
+
+  @override
+  String adminAuditSetStatus(String from, String to) {
+    return 'Állapotváltás: $from → $to';
+  }
+
+  @override
+  String adminAuditOther(String action) {
+    return '$action';
+  }
+
+  @override
+  String get adminBackToOrders => 'Vissza a rendelésekhez';
+
+  @override
   String get imageCreditsTitle => 'Képek forrásai';
 
   @override

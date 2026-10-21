@@ -18,8 +18,8 @@ teljes vásárlási úton. Az architektúra úgy épül, hogy az MVP-be **bőví
 | c | Belépés és regisztráció (Supabase Auth), demó fiók, védett útvonalak | kész |
 | d | Étlap a Supabase-ből (kategóriák, termékek, árak), betöltési és hibaállapotok | kész |
 | e | Kosár a szerver árazásával, kiszállítási zónák és idősávok a Supabase-ből, mentett kosár | kész |
-| f | Rendelés leadása és fake fizetés a szerveren (Edge Function-ök, aláírt webhook), élő rendelés-követés | kész és tesztelt (lokális és self-hosted Supabase, böngészőben is); jóváhagyásra vár |
-| g | Mini admin (Flutter web), szimulált értesítések | nincs |
+| f | Rendelés leadása és fake fizetés a szerveren (Edge Function-ök, aláírt webhook), élő rendelés-követés | kész |
+| g | Mini admin (Flutter web: belépés, élő rendeléslista, állapotváltás, audit napló), szimulált értesítések a vásárlónál | kész és tesztelt (lokális Supabase, két böngészőben egyszerre is); jóváhagyásra vár |
 | h–j | Web build + deploy + APK, eszközellenőrzés, átadási csomag | nincs |
 | k | Végleges logó | nincs |
 
@@ -50,7 +50,9 @@ python3 supabase/tests/api_smoke.py --from-local                # 20 HTTP-ellen�
 pip install websockets && python3 supabase/tests/realtime_smoke.py --from-local   # élő rendelésfrissítés
 python3 supabase/tests/payment_smoke.py --from-local            # 28 ellenőrzés a fizetési úton (valódi Edge Function-ök)
 npm run test:functions                                          # a fizetési kód Node-tesztjei (aláírás, munkamenet, webhook)
-python3 tool/create_demo_user.py --from-local                   # a demó fiók (db reset után újra kell)
+python3 tool/create_demo_user.py --from-local                   # a demó vásárló (db reset után újra kell)
+python3 tool/create_staff_user.py --from-local --role operator  # konyhai munkatárs: konyha@zaba.example (db reset után újra)
+python3 tool/create_staff_user.py --from-local --role admin     # admin: admin@zaba.example
 npx supabase stop
 ```
 
@@ -62,10 +64,21 @@ flutter run -d web-server --web-port 8080 --dart-define-from-file=../config/dev.
 # a belépés valódi Supabase-kliensét a futó stackkel is kipróbálja:
 flutter test test/integration \
   --dart-define=ZABA_TEST_SUPABASE_URL=http://127.0.0.1:54321 \
-  --dart-define=ZABA_TEST_SUPABASE_KEY=<a `supabase status` publikus kulcsa>
+  --dart-define=ZABA_TEST_SUPABASE_KEY=<a `supabase status` publikus (anon) kulcsa> \
+  --dart-define=ZABA_TEST_SUPABASE_SECRET_KEY=<a `supabase status` titkos kulcsa: csak az admin tesztekhez, munkatársi fiókot hoz létre>
 ```
 
 Konfiguráció (`SUPABASE_URL`) nélkül az app a memóriabeli adatokon, egy beépített demó fiókkal fut.
+
+A kezelőfelület (admin) külön belépési pont, csak backenddel működik:
+
+```sh
+cd app
+flutter run -d web-server --web-port 8081 -t lib/main_admin.dart --dart-define-from-file=../config/dev.json
+flutter build web --release -t lib/main_admin.dart --dart-define-from-file=../config/dev.json   # kimenet: app/build/web
+```
+
+A belépés a fent létrehozott munkatársi fiókkal megy. A `config/dev.json` `ADMIN_DEMO_*` értékei egy „Belépés demó munkatársként" gombot adnak a helyi fejlesztéshez; a vásárlónak adott build ezeket ne tartalmazza.
 
 A kliens `SUPABASE_URL`-jét és publikus kulcsát a `config/<env>.json` adja, a titkos kulcs sosem kerül az appba.
 A saját szerveres (Proxmox, Cloudflare Tunnel) telepítés leírása: [`deploy/selfhost/README.md`](deploy/selfhost/README.md).

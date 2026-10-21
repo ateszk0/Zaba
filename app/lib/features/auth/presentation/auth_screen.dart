@@ -4,13 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/router/locations.dart';
-import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/zaba_wordmark.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../application/auth_providers.dart';
 import '../domain/auth_repository.dart';
 import '../domain/auth_rules.dart';
+import '../../../core/widgets/failure_box.dart';
 import 'auth_messages.dart';
 
 enum AuthMode { login, register }
@@ -239,7 +239,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       ),
                       if (_failure != null) ...[
                         const SizedBox(height: AppSpacing.md),
-                        _FailureBox(
+                        FailureBox(
                           message: authFailureMessage(l10n, _failure!),
                         ),
                       ],
@@ -295,45 +295,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 ),
               ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _FailureBox extends StatelessWidget {
-  const _FailureBox({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      liveRegion: true,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: AppColors.tomato100,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Icon(
-                Icons.error_outline_rounded,
-                color: AppColors.tomato700,
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Text(
-                  message,
-                  style: Theme.of(context).textTheme.bodyMedium
-                      ?.copyWith(color: AppColors.tomato700),
-                ),
-              ),
-            ],
           ),
         ),
       ),

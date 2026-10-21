@@ -22,7 +22,8 @@ cloudflared ──► Caddy ──► app-staging.<domain>    Flutter web build 
 |---|---|
 | Az `install.sh` végig (hivatalos stack, titokgenerálás, migrációk, seed, fizetési függvények), többször futtatva is | Futtatás a **Proxmox VM**-en (a te gépeden) |
 | A 20 API-ellenőrzés, a 28 fizetési ellenőrzés (valódi Edge Function-ökkel, aláírt webhookkal) és a Realtime élő frissítés | A **Cloudflare Tunnel** (a tokened nélkül nem lehet) és a WebSocket a Cloudflare-en át |
-| Az app integrációs tesztjei (35) a self-hosted stack ellen, a régi JWT-s anon kulccsal, mint a stagingen | Az app böngészős kipróbálása a **self-hosted** stacken (a CLI stacken megtörtént) |
+| Az app integrációs tesztjei (35) a self-hosted stack ellen, a régi JWT-s anon kulccsal, mint a stagingen | Az app és az admin böngészős kipróbálása a **self-hosted** stacken (a CLI stacken megtörtént) |
+| | Az admin oldal telepítése (`deploy-web.sh ... admin`, `rsync`/`ssh`) és a munkatársi fiók létrehozása a szerveren |
 | Mi érhető el kívülről és mi nem (Studio, meta API: 404), CORS, a webes build kiszolgálása | A `deploy-web.sh` `rsync`/`ssh` része |
 | A Caddyfile, a shell scriptek, a compose profil szintaxisa (CI-ban is) | A telepítés `git clone`-ja a privát repóból a szerveren |
 
@@ -101,14 +102,26 @@ SUPABASE_URL=https://api-staging.<domain> SUPABASE_PUBLISHABLE_KEY=<anon kulcs> 
   python3 tool/create_demo_user.py
 ```
 
-## 5. A webes app feltöltése
+A **munkatársi fiókok** (az admin oldalhoz) a titkos kulccsal hozhatók létre, ami a szerver `.env`-jében van (`sh run.sh secrets`), ezért a parancsot
+úgy futtasd, hogy a kulcs ne kerüljön a chatbe vagy a repóba (a szerveren vagy a fejlesztői gépen a környezetben, a parancs idejére):
+
+```sh
+SUPABASE_URL=https://api-staging.<domain> SUPABASE_PUBLISHABLE_KEY=<anon kulcs> SUPABASE_SECRET_KEY=<titkos kulcs> \
+  STAFF_EMAIL=<e-mail> STAFF_PASSWORD=<jelszó> python3 tool/create_staff_user.py --role operator   # vagy: --role admin
+```
+
+## 5. A webes app és az admin oldal feltöltése
 
 A fejlesztői gépről (a `config/staging.json` a telepítő kimenete alapján készül, a `.gitignore` kizárja a repóból):
 
 ```sh
-deploy/selfhost/deploy-web.sh user@a-szerver
+deploy/selfhost/deploy-web.sh user@a-szerver            # a vásárlói app (app-staging.<domain>)
+deploy/selfhost/deploy-web.sh user@a-szerver admin      # az admin oldal (admin-staging.<domain>)
 ```
 
+Az admin build ugyanazt a `config/staging.json`-t használja. Az `ADMIN_DEMO_EMAIL` / `ADMIN_DEMO_PASSWORD` a "Belépés demó munkatársként" gombot kapcsolja be: a
+jelszó az oldalba van fordítva, tehát bárki, aki az admin címét megnyitja, kezelheti a rendeléseket. A vásárlónak adott linkhez ezért hagyd ki a két értékből, és a
+munkatárs gépelje be a jelszót (a vásárlói buildből a fa-nyesés kiveszi, az admin buildből nem).
 Ez lebuildeli a `flutter build web --release`-t a staging beállításokkal, és `rsync`-kel feltölti. Utána az `https://app-staging.<domain>` a telefonodról is megnyitható.
 
 ## 6. Üzemeltetés

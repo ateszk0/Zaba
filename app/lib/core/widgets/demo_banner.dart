@@ -8,7 +8,10 @@ import '../theme/app_spacing.dart';
 /// service. It owns the top safe area (notch / status bar), so the screens
 /// below it must not add their own: see [DemoFrame].
 class DemoBanner extends StatelessWidget {
-  const DemoBanner({super.key});
+  const DemoBanner({super.key, this.label});
+
+  /// The text; the customer app's demo notice when null.
+  final String? label;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +27,7 @@ class DemoBanner extends StatelessWidget {
           ),
           child: Center(
             child: Text(
-              AppLocalizations.of(context).demoBanner,
+              label ?? AppLocalizations.of(context).demoBanner,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.labelMedium?.copyWith(
@@ -43,15 +46,20 @@ class DemoBanner extends StatelessWidget {
 /// Puts the [DemoBanner] above the app and removes the top inset from the
 /// content, because the banner already sits below the status bar.
 class DemoFrame extends StatelessWidget {
-  const DemoFrame({super.key, required this.child});
+  const DemoFrame({super.key, required this.child, this.label, this.below});
 
   final Widget child;
+  final String? label;
+
+  /// Shown between the banner and the app, for example a notification.
+  final Widget? below;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const DemoBanner(),
+        DemoBanner(label: label),
+        ?below,
         Expanded(
           child: MediaQuery.removePadding(
             context: context,

@@ -54,10 +54,18 @@ PlaceOrderRequest validRequest({String key = 'key-1'}) => PlaceOrderRequest(
 );
 
 /// An order as the server would return it, for tests that only need one to exist.
-Order sampleOrder({OrderStatus status = OrderStatus.received}) => Order(
-  id: 'order-1',
-  number: 'ZB-1001',
-  placedAt: fixedNow,
+Order sampleOrder({
+  String id = 'order-1',
+  String number = 'ZB-1001',
+  OrderStatus status = OrderStatus.received,
+  PaymentStatus paymentStatus = PaymentStatus.succeeded,
+  DeliverySlot? slot,
+  DateTime? placedAt,
+  String note = '',
+}) => Order(
+  id: id,
+  number: number,
+  placedAt: placedAt ?? fixedNow,
   lines: const [
     OrderLine(
       productId: 'carbonara',
@@ -69,8 +77,8 @@ Order sampleOrder({OrderStatus status = OrderStatus.received}) => Order(
   subtotal: const Money(5580),
   deliveryFee: const Money(990),
   address: innerAddress,
-  slot: bookableSlot,
-  note: '',
+  slot: slot ?? bookableSlot,
+  note: note,
   status: status,
-  paymentStatus: PaymentStatus.succeeded,
+  paymentStatus: paymentStatus,
 );

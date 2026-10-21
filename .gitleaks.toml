@@ -1,0 +1,12 @@
+title = "Zaba secret scan"
+
+[extend]
+useDefault = true
+
+# The demo and test accounts of the local development stack have throw-away
+# passwords that are written down on purpose (config/dev.example.json, the
+# README, the tests): they protect nothing, since the local stack's keys are
+# public too. Every other password-like value is still reported.
+[[allowlists]]
+description = "Throw-away passwords of the local demo, staff and test accounts"
+regexes = ['''(Demo|Konyha|Admin|Vevo)-jelszo-[0-9]+''']

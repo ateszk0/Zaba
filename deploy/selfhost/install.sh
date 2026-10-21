@@ -115,7 +115,7 @@ mkdir -p zaba/web/app zaba/web/admin
 cp "$here/docker-compose.zaba.yml" docker-compose.zaba.yml
 cp "$here/Caddyfile" zaba/Caddyfile
 [ -f zaba/web/app/index.html ] || printf '<!doctype html><meta charset="utf-8"><title>Zaba</title><p>Zaba staging: the app has not been deployed yet.</p>\n' > zaba/web/app/index.html
-[ -f zaba/web/admin/index.html ] || printf '<!doctype html><meta charset="utf-8"><title>Zaba admin</title><p>The admin page comes in a later step.</p>\n' > zaba/web/admin/index.html
+[ -f zaba/web/admin/index.html ] || printf '<!doctype html><meta charset="utf-8"><title>Zaba admin</title><p>The admin page has not been deployed yet (deploy-web.sh user@server admin).</p>\n' > zaba/web/admin/index.html
 if ! grep -q 'docker-compose.zaba.yml' .env; then
   sh run.sh config add zaba >/dev/null
 fi
@@ -165,7 +165,7 @@ cat <<EOF
 
   App:     $scheme://$ZABA_APP_HOST
   API:     $scheme://$ZABA_API_HOST
-  Admin:   $scheme://$ZABA_ADMIN_HOST   (placeholder for now)
+  Admin:   $scheme://$ZABA_ADMIN_HOST   (deploy it with deploy-web.sh ... admin)
   Tunnel:  $tunnel
   Direct:  http://${ZABA_HTTP_BIND:-127.0.0.1}:${ZABA_HTTP_PORT:-8080}  (Host header decides which of the three)
 

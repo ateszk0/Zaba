@@ -9,6 +9,7 @@ import '../../features/cart/presentation/cart_screen.dart';
 import '../../features/catalog/presentation/image_credits_screen.dart';
 import '../../features/catalog/presentation/menu_screen.dart';
 import '../../features/checkout/presentation/checkout_screen.dart';
+import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/orders/presentation/order_tracking_screen.dart';
 import '../../features/orders/presentation/orders_screen.dart';
 import '../../features/payment/presentation/payment_screen.dart';
@@ -124,6 +125,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           mode: AuthMode.register,
           returnTo: safeReturnPath(state.uri.queryParameters['from']),
         ),
+      ),
+      GoRoute(
+        path: '/notifications',
+        builder: (context, state) => const NotificationsScreen(),
       ),
       GoRoute(
         path: '/checkout',

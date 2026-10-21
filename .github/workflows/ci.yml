@@ -33,6 +33,8 @@ jobs:
       - run: flutter analyze
       - run: flutter test
       - run: flutter build web --release --dart-define=APP_ENV=dev
+      # The admin page is a separate build of the same project.
+      - run: flutter build web --release -t lib/main_admin.dart --dart-define=APP_ENV=dev --output build/admin
 
   database:
     name: Database (migrations, pgTAP tests, API smoke test)
@@ -73,21 +75,29 @@ jobs:
       - run: python3 tool/create_demo_user.py --from-local
       - run: python3 tool/create_demo_user.py --from-local
 
+      # The staff accounts of the admin page (again twice for the first).
+      - run: python3 tool/create_staff_user.py --from-local --role operator
+      - run: python3 tool/create_staff_user.py --from-local --role operator
+      - run: python3 tool/create_staff_user.py --from-local --role admin
+
       # The app's own sign-in code against the real auth server.
       - uses: subosito/flutter-action@v2.23.0
         with:
           flutter-version: 3.47.0
           channel: stable
           cache: true
-      - name: App integration tests (auth, menu, cart, orders, payment)
+      - name: App integration tests (auth, menu, cart, orders, payment, admin)
         working-directory: app
         run: |
           flutter pub get
           # The legacy anon JWT, as on the self-hosted staging.
-          key="$(npx supabase status -o json | python3 -c 'import json, sys; t = sys.stdin.read(); print(json.loads(t[t.index("{"):])["ANON_KEY"])')"
+          stack_status="$(npx supabase status -o json)"
+          key="$(python3 -c 'import json, sys; t = sys.argv[1]; print(json.loads(t[t.index("{"):])["ANON_KEY"])' "$stack_status")"
+          secret="$(python3 -c 'import json, sys; t = sys.argv[1]; print(json.loads(t[t.index("{"):])["SECRET_KEY"])' "$stack_status")"
           flutter test test/integration \
             --dart-define=ZABA_TEST_SUPABASE_URL=http://127.0.0.1:54321 \
-            --dart-define=ZABA_TEST_SUPABASE_KEY="$key"
+            --dart-define=ZABA_TEST_SUPABASE_KEY="$key" \
+            --dart-define=ZABA_TEST_SUPABASE_SECRET_KEY="$secret"
 
       - if: always()
         run: npx supabase stop --no-backup
