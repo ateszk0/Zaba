@@ -92,6 +92,9 @@ Az átadásnál a megrendelő felé az alábbi tényeket kell közölni és (a [
 | A saját szerveres környezet (Proxmox, Cloudflare Tunnel) | [`deploy/selfhost/README.md`](../deploy/selfhost/README.md) |
 | Minden beállítás és titok | [`env-vars.md`](env-vars.md) |
 | Hogyan áll össze a rendszer, hol bővíthető | [`architecture.md`](architecture.md) |
+| **Az egész kódbázis részletes leírása** (minden fájl, osztály, mező, függvény) | [`development.md`](development.md) |
+| A kódellenőrzés eredménye | [`code-review.md`](code-review.md) |
+| **Az éles üzem terve** (saját szerver, mért adatok, ellenőrzőlista, futtatási kézikönyv) | [`real-life-plan.md`](real-life-plan.md) |
 | Adatmodell, jogosultságok, az állapotgép | [`data-model.md`](data-model.md) |
 | A fizetés folyamata, az éles szolgáltatóra váltás | [`payment-flow.md`](payment-flow.md) |
 | Döntések, mérések, nyitott ellenőrzések | [`decisions.md`](decisions.md) |
@@ -100,6 +103,7 @@ Az átadásnál a megrendelő felé az alábbi tényeket kell közölni és (a [
 | Telefonos ellenőrzés, előnézet a saját gépről | [`test-checklist.md`](test-checklist.md) |
 | Szerződés-melléklet vázlata (ügyvédnek) | [`contract-annex-outline.md`](contract-annex-outline.md) |
 
+Gyakori teendők a saját szerveren: **mentés** `deploy/selfhost/backup.sh`, **visszaállítás** `restore.sh`, **ellenőrzés** `verify.sh`, **ütemezett feladatok** `schedule.sh`.
 Gyakori teendők: **új verzió telepítése** a `deploy/demo/deploy-web.sh app|admin|apk` és a `deploy/demo/setup-supabase.sh update`; **munkatárs felvétele** a `tool/create_staff_user.py`; **szünetelő Supabase projekt** helyreállítása a dashboardról
 (a Free csomagon egy hét inaktivitás után szünetel; a dokumentáció szerint egy ideig visszaállítható).
 

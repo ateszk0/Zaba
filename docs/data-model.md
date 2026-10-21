@@ -82,7 +82,7 @@ címkéket és idővonalat jelenít meg. A tábla teljes tartalmát a `060_seed_
 stateDiagram-v2
   [*] --> pending_payment : a vásárló leadja
   pending_payment --> received : fizetési esemény (csak ez!)
-  pending_payment --> cancelled : vásárló vagy üzemeltető
+  pending_payment --> cancelled : vásárló, üzemeltető, vagy a lejárat (fizetési oldal)
   received --> preparing : üzemeltető
   received --> cancelled : vásárló vagy üzemeltető
   preparing --> out_for_delivery : üzemeltető
@@ -91,6 +91,10 @@ stateDiagram-v2
   delivered --> [*]
   cancelled --> [*]
 ```
+
+**Lejárat.** A fizetésre váró rendelés az idősáv egy helyét már foglalja. Ezért vásárlónként legfeljebb 5 ilyen lehet (`place_order`: `too_many_unpaid_orders`), és az `expire_unpaid_orders(p_older_than)` (csak a service role hívhatja; a `deploy/selfhost/schedule.sh` ütemezi `pg_cron`-nal, alapból 30 perc után) a régieket lemondja `payment` szereplővel (ezért a `pending_payment`→`cancelled` átmenetet a `payment` is használhatja), lezárja a nyitott fizetési kísérleteiket, és naplóz.
+
+**Aktív kategória.** A `catalog_products` nézet és a `private.compute_quote` csak olyan terméket ismer, amelynek a kategóriája is aktív: egy kategória kikapcsolása az összes termékét kiveszi az étlapból és a rendelhetők közül, a visszakapcsolása visszahozza őket.
 
 Lemondáskor a rendelés visszaadja a helyét az idősávban, a kifizetett összeg pedig `refunded` lesz (a demóban azonnal; az MVP-ben
 a fizetési szolgáltatótól kell visszatérítést kérni).
@@ -108,6 +112,7 @@ Semmilyen állapotváltoztató adat nem írható közvetlenül a kliensről: a t
 | Rendelés lemondása | `cancel_order` | a rendelés tulajdonosa, amíg az állapotgép engedi |
 | Állapot léptetése | `admin_set_order_status` | munkatárs (`admin`, `operator`), naplózva; a kezelőfelület (`lib/main_admin.dart`) ezt használja |
 | Fizetési esemény feldolgozása (idempotens, csak nyitott és egyező fizetési kísérletre) | `apply_payment_event` | **csak a service role** (webhook-kezelő), lásd [`payment-flow.md`](payment-flow.md) |
+| A régi fizetetlen rendelések lemondása | `expire_unpaid_orders` | **csak a service role** (ütemezett feladat) |
 
 Olvasás: a katalógus és a szállítási feltételek nyilvánosak; a vásárló csak a saját profilját, címeit és rendeléseit látja (a
 rendelés idősávjának idejét is, a kapacitását nem); a munkatárs minden rendelést; az audit naplót csak az `admin` szerepkör. Minden tábla RLS-sel védett, és a jogosultságok alapból zártak.

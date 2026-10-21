@@ -46,6 +46,10 @@ sequenceDiagram
 elutasított). Aki rendelkezik egy érvényes fizetési munkamenettel, az ezért "jóváhagyottat" jelenthet kártya nélkül is. Ez a demóban
 szándékos és csak ott igaz; a valódi szolgáltatónál ez a lépés a szolgáltató oldalán dől el.
 
+**A hamis út kapcsolója.** Mivel ez a lépés egy valódi boltban kifizetetté tenné bármelyik rendelést, a `payments-create` és a `fake-provider-confirm` **csak akkor dolgozik, ha a `FAKE_PAYMENTS_ENABLED` értéke pontosan `true`**
+(`supabase/functions/_shared/flags.ts`); egyébként 503-at adnak. A kapcsoló **alapból zárt**: a demó, a helyi teszt és a saját szerveres staging (az `install.sh` friss stacken) kapcsolja be, valódi fizetésnél `false` vagy hiányzó érték kell.
+A `verify.sh` figyelmeztet, amíg be van kapcsolva, és a `payment_smoke.py` érthető üzenettel jelzi, ha a kapcsoló miatt nem fut.
+
 ## Biztonsági tulajdonságok (mind tesztelt)
 
 - A webhook aláírás nélküli, rosszul aláírt, módosított törzsű, régi (5 percnél idősebb) vagy értelmezhetetlen eseményt elutasít, és az
@@ -62,17 +66,20 @@ szándékos és csak ott igaz; a valódi szolgáltatónál ez a lépés a szolg�
 
 ## Valódi szolgáltatóra váltás (MVP)
 
+0. **`FAKE_PAYMENTS_ENABLED=false`** és a függvények újraindítása; a tesztkártya-súgó (`payment_screen.dart`) a valódi szolgáltatóval lecserélődik.
 1. Egy új osztály a `PaymentProvider` interfészhez (`supabase/functions/_shared/payments/provider.ts`): `createSession` a szolgáltató
    API-ját hívja, `verifyWebhook` a szolgáltató aláírását ellenőrzi.
 2. A `payments-create` a valódi osztályt példányosítja; a `fake-provider-confirm` megszűnik.
 3. A `payments-webhook` a szolgáltató címe lesz. A felhős Supabase-en ehhez a függvényen ki kell kapcsolni a JWT-ellenőrzést
    (`verify_jwt = false`), mert a szolgáltató nem küld Supabase tokent; a hitelesítést az aláírás adja.
-4. A visszatérítés (`refunds`) a szolgáltató API-ján át megy; a demóban a lemondás azonnal `refunded`-re állítja a fizetést.
-5. A szolgáltató kiválasztása és a szerződés az MVP elején, a szolgáltató hivatalos dokumentációja alapján.
+4. **Összeg- és pénznem-ellenőrzés a webhookban (kötelező).** Az `apply_payment_event` az eseményt a nyitott fizetési kísérlethez illeszti, de nem hasonlítja össze a szolgáltató által jelentett összeget a `payments.amount_huf`-fal (a hamis szolgáltató eseménye nem hordoz összeget). Az éles adapternek ezt az `apply_payment_event` hívása **előtt** kell elvégeznie (eltérésnél az esemény ne hasson, a rendelés maradjon fizetésre váró, és kézi vizsgálat induljon); teszt kell hozzá.
+5. A visszatérítés (`refunds`) a szolgáltató API-ján át megy; a demóban a lemondás azonnal `refunded`-re állítja a fizetést.
+6. A szolgáltató kiválasztása és a szerződés az MVP elején, a szolgáltató hivatalos dokumentációja alapján.
 
 ## Ismert korlátok (demó)
 
 - Ha a webhook hibát ad (500), a valódi szolgáltató újrapróbálna; a fake szolgáltató nem, az app ilyenkor "a fizetést most nem sikerült
   elindítani" üzenetet ad, a rendelés fizetésre vár, és újra fizethető.
+- A fizetésre váró rendelés **lejár**: a vásárlónként legfeljebb 5 fizetetlen rendelés korlát és az `expire_unpaid_orders` (a `schedule.sh` ütemezi, alapból 30 perc után) a lemondott rendelés helyét visszaadja az idősávnak. A lejárat `payment` szereplővel jelenik meg az előzményben, és a lejárat után érkező sikeres esemény nem fizeti ki a rendelést (`order_not_pending`; a pgTAP `100` őrzi).
 - Egy sikeres fizetés utáni, lemondás közbeni versenyhelyzetet (lemondott rendelésre érkező sikeres esemény) a demó nem kezeli:
   `order_not_pending` néven figyelmen kívül marad; a valódi szolgáltatónál ez visszatérítést igényel.

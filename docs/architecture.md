@@ -2,7 +2,7 @@
 
 Ez a lap azt írja le, **hogyan van összerakva** a Zaba, és mely szabályokat érdemes tartani, hogy a demóból bővítéssel (nem újraírással) lehessen MVP.
 A részletek külön lapokon vannak: az adatbázis [`data-model.md`](data-model.md), a fizetés [`payment-flow.md`](payment-flow.md), a döntések és mérések
-[`decisions.md`](decisions.md), a környezeti változók [`env-vars.md`](env-vars.md).
+[`decisions.md`](decisions.md), a környezeti változók [`env-vars.md`](env-vars.md), **az egész kódbázis részletes leírása** a [`development.md`](development.md)-ben, az éles üzem terve a [`real-life-plan.md`](real-life-plan.md)-ben.
 
 ## Áttekintés
 

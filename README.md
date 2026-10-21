@@ -44,14 +44,15 @@ Követelmény: Docker és Node.js. A Supabase CLI verziója a `package.json`-ban
 
 ```sh
 npm ci
-echo "FAKE_PAYMENT_WEBHOOK_SECRET=$(openssl rand -hex 32)" > supabase/.env   # a fizetési függvények titka, egyszer
+printf 'FAKE_PAYMENT_WEBHOOK_SECRET=%s\nFAKE_PAYMENTS_ENABLED=true\n' "$(openssl rand -hex 32)" > supabase/.env   # a fizetési függvények titka és a demó-kapcsoló, egyszer
 npx supabase start -x studio,imgproxy,vector,logflare,mailpit   # első indításkor sok képet tölt le
 npx supabase db reset                                           # migrációk + seed adatok
 npx supabase test db                                            # pgTAP-tesztek: séma, jogosultság, árazás, rendelés, fizetés
 python3 supabase/tests/api_smoke.py --from-local                # HTTP-ellenőrzések a futó stack ellen
 pip install websockets && python3 supabase/tests/realtime_smoke.py --from-local   # élő rendelésfrissítés
 python3 supabase/tests/payment_smoke.py --from-local            # a fizetési út (valódi Edge Function-ök)
-npm run test:functions                                          # a fizetési kód Node-tesztjei (aláírás, munkamenet, webhook)
+npm run test:functions                                          # a függvények Node-tesztjei (aláírás, munkamenet, webhook, belépési pontok, kapcsolók)
+python3 tool/dev_inventory.py --check --list                    # a docs/development.md leír-e mindent, amit a kód deklarál
 python3 tool/create_demo_user.py --from-local                   # a demó vásárló (db reset után újra kell)
 python3 tool/create_staff_user.py --from-local --role operator  # konyhai munkatárs: konyha@zaba.example (db reset után újra)
 python3 tool/create_staff_user.py --from-local --role admin     # admin: admin@zaba.example
@@ -120,6 +121,9 @@ jogi következményei bizonytalanok ([`docs/contract-annex-outline.md`](docs/con
 
 ## Dokumentáció
 
+- [`docs/development.md`](docs/development.md): **fejlesztői útmutató az egész kódbázisról**: minden fájl, osztály, szolgáltató, mező, függvény, adatbázis-objektum és szkript leírása (a CI ellenőrzi, hogy teljes-e)
+- [`docs/code-review.md`](docs/code-review.md): a teljes kódellenőrzés és a saját szerveres környezet próbáinak eredménye, a találatok állapotával
+- [`docs/real-life-plan.md`](docs/real-life-plan.md): az éles üzem terve a saját szerveren: mért adatok, méretezés, biztonság, fizetés, e-mail, üzemeltetés, go-live ellenőrzőlista, futtatási kézikönyv
 - [`docs/architecture.md`](docs/architecture.md): hogyan áll össze a rendszer, a kliens rétegei, a backend, hol bővíthető az MVP-hez
 - [`docs/decisions.md`](docs/decisions.md): technológiai döntések, mérések, nyitott ellenőrzések
 - [`docs/data-model.md`](docs/data-model.md): ER-diagram, a rendelés állapotgépe, ki mit írhat

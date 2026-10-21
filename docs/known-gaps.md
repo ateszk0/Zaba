@@ -11,6 +11,7 @@ Jelölés a „Ki dönt" oszlopban: **M** = a megrendelő üzleti döntése, **J
 | Hiány | Miért számít | Mi kell hozzá | Ki |
 |---|---|---|---|
 | **Éles fizetés.** A demó szimulált szolgáltatót használ | Valódi pénz csak valódi szolgáltatón át mozoghat | Szolgáltató kiválasztása (Barion, Stripe, SimplePay: az összehasonlítást az MVP elején a hivatalos dokumentációjuk alapján kell elvégezni, itt nem döntöttem), szerződés vele, adapter a `PaymentProvider` interfész mögé ([`payment-flow.md`](payment-flow.md)) | M, F |
+| **Összeg- és pénznem-ellenőrzés a fizetési webhookban.** Az `apply_payment_event` a szolgáltató által jelentett összeget nem hasonlítja a rendelés összegéhez (a hamis szolgáltató eseménye nem hordoz összeget) | Éles szolgáltatónál egy kisebb összegű sikeres fizetés kifizetettnek jelölhetne egy drágább rendelést | Az adapter ellenőrzése az `apply_payment_event` hívása előtt, teszttel ([`payment-flow.md`](payment-flow.md)) | F |
 | **Valódi visszatérítés.** Lemondáskor a státusz azonnal `refunded` | A kifizetett összeget a szolgáltatótól kell visszakérni | `refunds` migráció, a szolgáltató felé hívás | F |
 | **Lemondás közben érkező sikeres fizetés.** A demó figyelmen kívül hagyja (`order_not_pending`) | Valódi szolgáltatónál ez visszatérítést igényel | Kezelés az adapterben, kézi vagy automatikus rendezés | F |
 | **Számlázás.** Kód nincs, csak a hely | Hogy mi kötelező és hogyan (a NAV Online Számla és a számla tartalma) a megrendelő működési formájától függ | Könyvelői egyeztetés, számlázó adapter, `invoices` migráció | K, M, F |
@@ -73,11 +74,13 @@ az app csomagjában vannak.
 
 | Hiány | Miért számít | Mi kell hozzá | Ki |
 |---|---|---|---|
-| **Nincs saját alkalmazás-szintű rate limiting, bot- és visszaélés-védelem** a regisztrációra és a rendelésre. A Supabase Auth beépített korlátai vannak, CAPTCHA nincs | Tömeges hamis regisztráció és rendelés | Korlátok a függvényekben, CAPTCHA (a Supabase támogatja a hCaptchát és a Turnstile-t) | F |
+| **A saját szerveres belépésnek nincs szerveroldali korlátja** a jelszópróbálkozásokra: mértük, ~100 rossz jelszót fogadott el másodpercenként, egyet sem utasítva el. A felhős Supabase beépített korlátai a saját szerveren nincsenek meg. CAPTCHA nincs | A fiókok (főleg a munkatársiak) kitalálhatók; tömeges hamis regisztráció | **Kötelező éles előtt:** Cloudflare sebességkorlát az `/auth/v1/token` és `/auth/v1/signup` útvonalra, Cloudflare Access az admin hoston, Turnstile ([`real-life-plan.md`](real-life-plan.md) 4.3) | F, üzemeltető |
+| **Fizetetlen rendelések foglalják az idősáv helyét.** *Kezelve:* vásárlónként legfeljebb 5 fizetésre váró rendelés, és az `expire_unpaid_orders` (a `deploy/selfhost/schedule.sh` ütemezi, alapból 30 perc után) lemondja a régieket. A felhős demón az ütemezést (pg_cron) külön be kell állítani | Különben bárki lefoglalhatná az összes helyet | Felhős Supabase-en `cron.schedule` ugyanezzel a hívással | F |
 | **Admin 2FA nincs**, jelszópolitika csak a Supabase alapja (legalább 8 karakter) | Az admin a legérzékenyebb belépés | Többfaktoros belépés a munkatársaknak | F |
 | **A függvények CORS-fejléce `*`** (`Access-Control-Allow-Origin`) | A függvények maguk hitelesítenek (token, aláírás), de szigorúbb is lehet | Az app eredeteire szűkíteni | F |
-| **Monitoring, hibakövetés, riasztás nincs** | Egy leállást nem veszel észre | Hibakövető és üzemi riasztás | F |
-| **Mentés és visszaállítási eljárás nincs kipróbálva** | Adatvesztés ellen | Fizetős Supabase-csomag mentéssel, **visszaállítási próba**; a Free csomag lehetőségeit a Supabase aktuális dokumentációja szerint kell ellenőrizni | F |
+| **Hibakövetés és külső riasztás nincs.** *Részben kezelve:* a saját szerveren a `verify.sh` kívülről ellenőrzi a stacket (cronból levelet küldhet), de a szerver nem tudja jelezni, ha maga érhetetlen | Egy leállást nem veszel észre | Külső üzemidő-figyelő, hibakövető ([`real-life-plan.md`](real-life-plan.md) 7.2) | F, üzemeltető |
+| **Mentés.** *Kezelve a saját szerveren:* a `backup.sh` (titkosítható) és a `restore.sh` kipróbálva, a katasztrófa-helyreállítás ~130 s alatt megtörtént. **Hiányzik:** az ütemezés, a másolat másik gépre, a negyedéves próba, és a felhős demó mentése (fizetős Supabase-csomag; a Free csomag lehetőségeit a Supabase aktuális dokumentációja szerint kell ellenőrizni) | Adatvesztés ellen | Ütemezés és másolás ([`real-life-plan.md`](real-life-plan.md) 7.1) | F, üzemeltető |
+| **A listák korlátosak:** a vásárló a legutóbbi 50, az admin a legutóbbi 200 rendelését tölti be | Nagy forgalomnál egy régi, még aktív rendelés kieshet a listából | Szerveroldali szűrés az aktív állapotokra és lapozás | F |
 | **A Free csomag egy hét inaktivitás után szünetel** (a `keepalive.yml` ezt hárítja) | Éles szolgáltatásnál elfogadhatatlan | Fizetős csomag (a szünetelés megszűnik) | M |
 | **Biztonsági átvizsgálás nem történt** | Éles indulás előtt kell | Külső átvizsgálás / penteszt | M |
 | **A függőségek frissítési rendje nincs kialakítva** | A `flutter pub outdated` három frissíthető és több, a korlátok miatt beragadt csomagot jelez; a `npm audit` ma 0 | Rendszeres frissítés (pl. Dependabot) és a tesztek futtatása utána | F |
@@ -107,7 +110,7 @@ Ezek **nem futottak** (nincs hozzáférésem hozzájuk), tehát „nem tesztelt"
 - A felhős **Supabase projekt** és a **Cloudflare** telepítése (`setup-supabase.sh`, `deploy-web.sh`, a két workflow). Helyben a ténylegesen kiadott fájlokon és fejléceken próbáltam.
 - A **Proxmox VM** és a **Cloudflare Tunnel**, benne a Realtime WebSocket átmegy-e. Tartalék az 5 mp-es lekérdezés.
 - **iPhone Safari, Android Chrome, valódi Android készülék.** Az Android app egy emulátoron futott.
-- **Terheléses teszt** nincs; két egyidejű rendelés a kapacitás utolsó helyére nincs külön terhelés alatt kipróbálva.
+- **Terhelés:** a saját szerveres stack a fejlesztői gépen kipróbálva (~1 600-1 800 kérés/mp, [`real-life-plan.md`](real-life-plan.md) 2. rész); a **célhardveren**, hosszú távon és sok egyidejű Realtime-kapcsolattal nem; két egyidejű rendelés a kapacitás utolsó helyére nincs külön terhelés alatt kipróbálva.
 - Az **end-to-end** böngészős tesztek nem részei a repónak (a helyi ellenőrzéshez használt scriptek a fejlesztő gépén voltak).
 - Az integrációs tesztek a CI-ban a helyi stacken futnak, éles projekten nem.
 

@@ -297,6 +297,28 @@ Ami ide tartozik, és itt elkészíthető volt, az elkészült; ami jogi vagy ad
 **Ismert korlátok:** a [`licenses.md`](licenses.md) az npm tranzitív csomagjainak és a Python segédcsomagok licencét, valamint a self-host csomag komponenseiét nem sorolja fel (a fejlesztői eszközök nem kerülnek az átadott termékbe; a komponenseket a megrendelő üzemelteti); a jogi és adózási kérdések
 megválaszolatlanok, ez a szakemberek dolga.
 
+## Kódellenőrzés és az éles terv
+
+A teljes kódbázis átnézése és a saját szerveres környezet végigpróbálása után ([`code-review.md`](code-review.md), [`real-life-plan.md`](real-life-plan.md)). A döntések és az indokuk:
+
+| Téma | Döntés | Miért |
+|---|---|---|
+| Hamis fizetés | A `payments-create` és a `fake-provider-confirm` csak a `FAKE_PAYMENTS_ENABLED=true` mellett dolgozik, **alapból zárt**; a demó és a helyi teszt kapcsolja be (a saját szerveres telepítő friss stacken, a felhős `setup-supabase.sh` alapból) | A hamis kártyalépésnél az app jelenti a kimenetet: valódi boltban bárki kifizetettnek jelölhetné a rendelését. Egy elfelejtett beállításnak a biztonságos irányba kell elbuknia |
+| Fizetetlen rendelések | Vásárlónként legfeljebb **5** fizetésre váró rendelés (`too_many_unpaid_orders`), és `expire_unpaid_orders` (alapból **30 perc** után lemond, legalább 5 percet kér) | Az idősáv helyét a rendelés felvételekor, fizetés előtt foglaljuk; korlát nélkül bárki lefoglalhatná az összes helyet. Az 5 és a 30 percet a megrendelő módosíthatja (`ZABA_UNPAID_MINUTES`, a konstans a migrációban); az 5 percnél rövidebb kérést az adatbázis elutasítja, hogy egy elgépelés ne mondjon le épp fizetett rendelést |
+| Lejárat ütemezése | `pg_cron` (a Supabase Postgres képe tartalmazza) a `deploy/selfhost/schedule.sh`-val; a lejárat `payment` szereplővel kerül az előzménybe | Nem kell külső ütemező; kipróbálva: a visszadatált rendelést lemondta és naplózta. A felhős Supabase-en ugyanez `cron.schedule`-lel |
+| Függvényjogok | Minden új SQL-függvényre kifejezett `revoke all ... from public, anon, authenticated`; a `110` pgTAP teszt **zárt listaként** őrzi | A PostgreSQL alapból `PUBLIC`-nak ad végrehajtási jogot, és a séma-szintű alapértelmezett jogok ezt nem veszik vissza; ezt egy új függvényen a teszt tényleg megfogta |
+| Inaktív kategória | A `catalog_products` nézet és a `compute_quote` is csak aktív kategória termékét ismeri (származtatott állapot, a termékek `is_active` jele érintetlen) | A kikapcsolt kategória termékei az appban eltűntek, de a szerver tovább árazta őket; a kategória visszakapcsolása így a termékeket is visszahozza, adatmásolás nélkül |
+| Naplók | Docker `json-file`, konténerenként 5 x 10 MB | A Docker alapból sosem forgatja a naplót; egy forgalmas szerver lassan megtölti a lemezt |
+| Az API-hoston átengedett útvonalak | Csak a `/rest/v1`, `/auth/v1`, `/realtime/v1`, `/functions/v1`; a Storage kikerült, amíg az app nem használja; minden ismeretlen hostnév 404 | A felület legyen akkora, amekkorát használunk; az üres 200 egy monitor számára működő oldalnak látszik |
+| Mentés | `pg_dump` egyéni formátumban **és** a stack `.env`-je egy (titkosítható: `openssl aes-256-cbc`, PBKDF2) fájlban; a visszaállítás **adat-visszatöltés egy tranzakcióban** (`public`, `auth`, `storage`, `supabase_migrations`) | A titok nélküli adat érvénytelenítené az appok kulcsát; a `pg_restore --clean` a Realtime partíciós kényszerein elbukott (biztonságosan visszagördült), az adat-visszatöltés nem |
+| Hibaág az appban | A hívást váró képernyők a `catch (_)`-lel az `Error`-t is elkapják, megmondják a hibát, és a gomb újra használható | Egy olvashatatlan szerverválasz (`TypeError`) az `on Exception` mellett örökre pörgő gombot hagyott |
+| Tárhely nélküli böngésző | Az `openPreferences` `null`-t ad, ha a tárhely tiltott; az app kosár- és munkamenet-megőrzés nélkül is indul | Egyes privát ablakokban és letiltott webhelyadatnál az app el sem indult volna |
+| Az útmutató ellenőrzése | A `tool/dev_inventory.py --check` a CI-ban: minden Dart-név a saját fájljának szakaszában, minden fájl, migrációs objektum, TypeScript-export és szkriptfüggvény a [`development.md`](development.md)-ben | A kézzel írt leírás elavul; ez a hiányt (nem a pontatlanságot) fogja meg, a tartalmat az átnézésnek kell őriznie |
+| Harmadik fél Action-jei | A teljes commit-azonosítóra (SHA) rögzítve | A címke átirányítható; az olvasható verzió megjegyzésben marad |
+| Mérések | Terhelés (12 magos fejlesztői gép, a terhelésgenerátorral együtt): ~1 800 kérés/mp katalógus, ~1 600 kérés/mp árazás, hiba nélkül; üres járási memória ~1,2 GB; katasztrófa-helyreállítás ~130 s; friss telepítés 1:56 | A célhardveren megismétlendő ([`real-life-plan.md`](real-life-plan.md) 2. és 3. rész) |
+
+**Amit az átnézés közben találtam és a saját hibám volt:** a `fake-provider-confirm` duplán deklarált változója miatt el sem indult (a `node --check` a TS-modulnál nem észleli: ezért tölti be a `entrypoints.test.ts` minden belépési pontot), és az új fizetetlen-korlát két régi pgTAP-fájlt (050, 060) elbuktatott (a friss telepítésen futtatott teljes pgTAP-sor mutatta ki). Mindkettő javítva, commitba nem kerültek hibásan.
+
 ## Nyitott ellenőrzések
 
 - **(i) iOS Safari.** A biztonságos terület kezelése (a `viewport-fit=cover` kikerült, lásd fent: a hatása iPhone-on ellenőrizendő), a billentyűzet

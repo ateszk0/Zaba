@@ -36,6 +36,7 @@ A valódi `config/*.json` fájlok git-ignoráltak; csak a `*.example.json` sablo
 | Név | | Mire | Hol áll be |
 |---|---|---|---|
 | `FAKE_PAYMENT_WEBHOOK_SECRET` | **T** | a szimulált fizetési szolgáltató aláíró titka (HMAC); **nélküle a függvények nem működnek**. Éles szolgáltatónál ennek helyére a szolgáltató webhook-titka kerül | helyben: `supabase/.env` (a `config.toml` `[edge_runtime.secrets]` adja át); felhőben: `supabase secrets set` (a `deploy/demo/setup-supabase.sh` végzi); saját szerveren a telepítő generálja |
+| `FAKE_PAYMENTS_ENABLED` | – | a **hamis fizetési út kapcsolója**: a `payments-create` és a `fake-provider-confirm` csak akkor dolgozik, ha az értéke pontosan `true`; egyébként 503-at adnak. Azért van, mert a hamis kártyalépésnél az app maga jelenti a kimenetet, vagyis egy valódi boltban bárki kifizetettnek jelölhetné a rendelését. **Alapból zárt**; a demó és a helyi teszt `true`, valódi fizetésnél `false` (vagy hiányzik) | helyben: `supabase/.env`; felhőben: `setup-supabase.sh` (alapból `true`, `FAKE_PAYMENTS_ENABLED=false` környezettel kikapcsolható); saját szerveren a telepítő friss stacken `true`-ra állítja a stack `.env`-jében, meglévőhöz nem nyúl |
 | `SUPABASE_URL` | – | a függvény saját projektjének címe; **a platform adja** | automatikus |
 | `SUPABASE_PUBLISHABLE_KEYS` | – | a platform JSON-szótára az új publikus kulcsokkal (`{"default": "sb_publishable_…"}`); a `payments-create` használja | automatikus (felhő) |
 | `SUPABASE_SECRET_KEYS` | – | ugyanez a titkos kulcsokkal; a `payments-webhook` használja | automatikus (felhő) |
@@ -54,7 +55,7 @@ A `tool/check_demo.py` **nem** környezeti változót olvas, hanem parancssori k
 | `SUPABASE_URL` | P | minden script és smoke teszt |
 | `SUPABASE_PUBLISHABLE_KEY` | P | `create_demo_user.py`, `create_staff_user.py`, a három smoke teszt (`api_smoke.py`, `realtime_smoke.py`, `payment_smoke.py`) |
 | `SUPABASE_ANON_KEY` | P | `realtime_smoke.py`, `payment_smoke.py` (a régi JWT-kulcs; a saját szerveres Realtime ezt kéri) |
-| `SUPABASE_SECRET_KEY` | **T** | `create_staff_user.py` (munkatársi fiók és jogosultság), `api_smoke.py`, `realtime_smoke.py`; **csak arra a pár percre add meg, és utána `unset`** |
+| `SUPABASE_SECRET_KEY` | **T** | `create_staff_user.py` (munkatársi fiók és jogosultság), `api_smoke.py`, `realtime_smoke.py`; **csak arra a pár percre add meg, és utána `unset`**. **Saját szerveren a régi `service_role` JWT kell** (a stack `.env`-jében `SERVICE_ROLE_KEY`): az új `sb_secret_` kulcsot az auth admin API ott 403-mal elutasítja |
 | `DEMO_EMAIL`, `DEMO_PASSWORD` | P | `create_demo_user.py` (helyben alapértelmezett: `demo@zaba.example` / `Demo-jelszo-1`) |
 | `STAFF_EMAIL`, `STAFF_PASSWORD` | **T** | `create_staff_user.py` (helyben alapértelmezett: `konyha@zaba.example`, `admin@zaba.example`; éles fiókhoz erős, egyedi jelszó) |
 | `FAKE_PAYMENT_WEBHOOK_SECRET` | **T** | `payment_smoke.py` (ugyanaz az érték, mint a függvényeké) |
@@ -67,6 +68,7 @@ A `tool/check_demo.py` **nem** környezeti változót olvas, hanem parancssori k
 | `SUPABASE_PROJECT_REF` | P | ugyanaz | a projekt azonosítója (a `.supabase.co` előtti rész) |
 | `SUPABASE_DB_PASSWORD` | **T** | ugyanaz | a projekt létrehozásakor megadott adatbázis-jelszó |
 | `FAKE_PAYMENT_WEBHOOK_SECRET` | **T** | ugyanaz; `openssl rand -hex 32`, legalább 32 karakter | te generálod, **mentsd el** |
+| `FAKE_PAYMENTS_ENABLED` | – | ugyanaz; alapból `true` (a demó hamis kártyalépése), valódi boltnál `false` | te adod meg |
 | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | **T** (a token); az azonosító nem titok, de ne tedd közzé | `deploy/demo/deploy-web.sh` (Wrangler); helyette lehet `npx wrangler login` | Cloudflare dashboard |
 | `ZABA_BUILD_OUT` | – | csak a `tool/lan_preview.sh` állítja, hogy a telefonos próba ne írja felül a telepítendő buildet | belső |
 
@@ -93,7 +95,14 @@ A `zaba-selfhost.env` (git-ignorált, mintája a `zaba-selfhost.env.example`) a 
 | `CLOUDFLARE_TUNNEL_TOKEN` | **T** | a tunnel tokenje; üresen is indul a stack, a tunnel nélkül |
 | `SUPABASE_SELFHOST_REF` | – | a hivatalos Supabase self-host kiadás, amelyhez a kit rögzítve van; a váltás frissítés, előbb a kiadás CHANGELOG-ját olvasd |
 | `ZABA_HTTP_BIND`, `ZABA_HTTP_PORT` | – | közvetlen elérés a tunnel nélkül (pl. telefonról ugyanazon a Wi-Fi-n) |
-| `ZABA_SELFHOST_ENV`, `ZABA_REMOTE_STACK_DIR` | – | a telepítő és a `deploy-web.sh` által használt útvonalak |
+| `ZABA_SELFHOST_ENV`, `ZABA_REMOTE_STACK_DIR` | – | a telepítő, a többi szerver-szkript és a `deploy-web.sh` által használt útvonalak |
+| `ZABA_UNPAID_MINUTES` | – | `schedule.sh`: ennyi perc után mondja le az adatbázis a fizetésre váró rendelést (alapból 30; legalább 5, az adatbázis kevesebbet nem fogad el) |
+| `ZABA_BACKUP_DIR` | – | `backup.sh`: hova kerül a mentés (alapból `~/zaba-backups`) |
+| `ZABA_BACKUP_KEEP` | – | `backup.sh`: hány legújabb mentést őriz (alapból 14) |
+| `ZABA_BACKUP_PASSPHRASE_FILE` | **T** (a fájl) | `backup.sh`, `restore.sh`: a mentés titkosításának jelszavát tartalmazó fájl (AES-256). Ha nincs megadva, a mentés **titkosítatlan**, és a stack titkait tartalmazza. A jelszót a mentéstől **külön helyen is** őrizd meg |
+
+A telepítő a stack saját `.env`-jébe ezeket az értékeket is beírja a fentiekből (a Caddy és a függvények kapják meg): `ZABA_PUBLIC_SCHEME` és `ZABA_PUBLIC_WS_SCHEME` (`https`/`wss` vagy `http`/`ws`, a tartalombiztonsági szabályhoz), `FAKE_PAYMENT_WEBHOOK_SECRET` (egyszer generálva), `FAKE_PAYMENTS_ENABLED`.
+Éles üzemhez a stack `.env`-jében még kellenek az `SMTP_*` változók (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_ADMIN_EMAIL`, `SMTP_SENDER_NAME`) és az `ENABLE_EMAIL_AUTOCONFIRM=false` ([`real-life-plan.md`](real-life-plan.md) 6. fejezet).
 
 **A stack titkait** (adatbázis-jelszó, JWT-titok, API-kulcsok, a Studio jelszava, a webhook-titok) a telepítő **generálja a szerveren**, a stack saját `.env`
 fájljába, és soha nem kerülnek a repóba vagy a beszélgetésbe. A telepítő a hivatalos `.env.example`-t másolja, és **rögtön kulcsot generál** (`generate-keys.sh`), mielőtt bármi elindulna: a helyőrző kulcsokkal a stack nem fut.
