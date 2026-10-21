@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:zaba/features/cart/application/cart_providers.dart';
+import 'package:zaba/features/cart/domain/cart_limits.dart';
+import 'package:zaba/features/cart/domain/cart_store.dart';
 
 void main() {
   late ProviderContainer container;
@@ -65,5 +67,54 @@ void main() {
     cart().add('lemonade');
 
     expect(before, {'carbonara': 1});
+  });
+
+  test('a line never grows past what the server accepts', () {
+    cart().add('carbonara', quantity: 98);
+    cart().add('carbonara', quantity: 5);
+    expect(lines(), {'carbonara': maxLineQuantity});
+
+    cart().increment('carbonara');
+    expect(lines(), {'carbonara': maxLineQuantity});
+  });
+
+  group('persistence', () {
+    test('every change is saved, and a new session starts from the save', () {
+      final store = MemoryCartStore();
+      final first = ProviderContainer(
+        overrides: [cartStoreProvider.overrideWithValue(store)],
+      );
+      first.read(cartProvider.notifier)
+        ..add('carbonara', quantity: 2)
+        ..add('lemonade')
+        ..decrement('lemonade')
+        ..add('arrabbiata');
+      expect(store.load(), {'carbonara': 2, 'arrabbiata': 1});
+      first.dispose();
+
+      final second = ProviderContainer(
+        overrides: [cartStoreProvider.overrideWithValue(store)],
+      );
+      addTearDown(second.dispose);
+      expect(second.read(cartProvider), {'carbonara': 2, 'arrabbiata': 1});
+
+      second.read(cartProvider.notifier).clear();
+      expect(store.load(), isEmpty);
+    });
+
+    test(
+      'retainOnly drops lines of products that are gone, and saves that',
+      () {
+        final store = MemoryCartStore({'carbonara': 2, 'ghost': 1});
+        container = ProviderContainer(
+          overrides: [cartStoreProvider.overrideWithValue(store)],
+        );
+
+        cart().retainOnly({'carbonara', 'lemonade'});
+
+        expect(lines(), {'carbonara': 2});
+        expect(store.load(), {'carbonara': 2});
+      },
+    );
   });
 }

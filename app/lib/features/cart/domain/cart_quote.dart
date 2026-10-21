@@ -1,13 +1,20 @@
 import '../../../core/money/money.dart';
 import '../../catalog/domain/product.dart';
 
+/// One line of the priced cart. The prices are the quote's, not the product's:
+/// the menu may have been loaded before the price changed.
 class QuoteLine {
-  const QuoteLine({required this.product, required this.quantity});
+  const QuoteLine({
+    required this.product,
+    required this.quantity,
+    required this.unitPrice,
+    required this.total,
+  });
 
   final Product product;
   final int quantity;
-
-  Money get total => product.price * quantity;
+  final Money unitPrice;
+  final Money total;
 }
 
 /// The priced cart. It is produced by a [QuoteService] (on the real backend:

@@ -14,6 +14,7 @@ final fixedNow = DateTime(2026, 10, 21, 10);
 
 /// A slot that is bookable at [fixedNow].
 final bookableSlot = DeliverySlot(
+  id: 'bookable',
   start: DateTime(2026, 10, 21, 12),
   end: DateTime(2026, 10, 21, 13),
 );

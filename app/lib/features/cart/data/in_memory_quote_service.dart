@@ -28,7 +28,12 @@ class InMemoryQuoteService implements QuoteService {
     final quoteLines = [
       for (final MapEntry(key: id, value: quantity) in lines.entries)
         if (quantity > 0 && products[id] != null)
-          QuoteLine(product: products[id]!, quantity: quantity),
+          QuoteLine(
+            product: products[id]!,
+            quantity: quantity,
+            unitPrice: products[id]!.price,
+            total: products[id]!.price * quantity,
+          ),
     ];
 
     final subtotal = Money.sum(quoteLines.map((line) => line.total));

@@ -107,7 +107,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         appBar: AppBar(title: Text(l10n.checkoutTitle)),
         body: quote == null
             ? (quoteAsync.hasError
-                  ? ErrorView(onRetry: () => ref.invalidate(cartQuoteProvider))
+                  ? ErrorView(onRetry: () => reloadCartQuote(ref))
                   : const LoadingView())
             : EmptyView(
                 icon: Icons.shopping_basket_outlined,

@@ -123,6 +123,7 @@ void main() {
         lines: const {'carbonara': 2},
         address: innerAddress,
         slot: DeliverySlot(
+          id: 'too-soon',
           start: DateTime(2026, 10, 21, 10),
           end: DateTime(2026, 10, 21, 11),
         ),

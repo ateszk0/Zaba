@@ -126,6 +126,27 @@ Kivitelezés és runbook: [`deploy/selfhost/`](../deploy/selfhost/README.md).
 
 **Nem része:** szerkeszthető étlap, készletkezelés (az `inventory` tábla előkészített), képfeltöltés – MVP.
 
+## Kosár és kiszállítás (e lépés)
+
+| Téma | Döntés | Miért |
+|---|---|---|
+| Árazás | A kosarat a `quote_cart` függvény árazza a szerveren; a kosár sora a **szerver** egységárát és sorösszegét mutatja (`QuoteLine`), nem a menüben betöltött árat | Ha az ár a menü betöltése után változik, a sor és a végösszeg nem mondhat ellent egymásnak; a kliens sosem számol végösszeget |
+| Zónák | A `delivery_zones` és a prefixek egyszer töltődnek le, az irányítószámot a kliens illeszti rájuk (`zoneServing`); a szerver az árazáskor és a rendeléskor újra ellenőrzi | A címdialógus azonnal válaszol; a döntés a szerveré marad. A zónák az app élettartamára gyorsítótárazottak: egy üzemeltetői módosítás újratöltésig nem látszik (az MVP admin felületével ez finomítandó) |
+| Idősávok | A `get_delivery_slots` (csak belépett vevőnek) sávjai azonosítóval (`DeliverySlot.id`), mert a rendelés az azonosítót foglalja; a szerver a saját órájával és a bolt időzónájában dönt, a kliens a készülék időzónájában mutatja | Magyarországon a kettő azonos; külföldről nézve a megjelenített idő eltérhet (időzónacsomag nélkül nem oldható meg) |
+| Mentett kosár | A `shared_preferences` (weben `localStorage`, kulcs: `zaba.cart.v1`) csak terméket és mennyiséget tárol, árat nem; betöltéskor csak az értelmes sorokat veszi át, a hibás vagy szerkesztett tartalmat eldobja | Újratöltés után a kosár megmarad (böngészőben ellenőrizve); egy módosított tárolt érték nem juttathat be érvénytelen sort |
+| Mennyiség | Egy sor legfeljebb 99 db (a szerver is ennyit fogad el, `invalid_lines`) | Különben a +-gomb túl sok kattintása az egész kosarat árazhatatlanná tenné |
+| Megszűnt termék | A szerver kihagyja az árazásból; az app ilyenkor a kosárból is kiveszi (`cartPruningProvider`) | A mentett kosárban lehet olyan termék, ami közben lekerült az étlapról; a tételszám és a sorok egyezzenek |
+| Üres kosár | Nem megy rá kérés a szerverre | Fölösleges hívás lenne a Kosár fülön és az app indulásakor |
+| Hiba | Az árazás hibájánál a kosár hibanézetet mutat, az „Újra" a menüt is újratölti; a kosár tartalma nem vész el, ha a szerver elérhetetlen | Valódi hálózaton előfordul |
+
+**Ellenőrzés:** az integrációs teszt ugyanazokat a kérdéseket (belső és külső zóna, ingyenes szállítás küszöb alatt és fölött, több termék, cím nélküli becslés, üres kosár) a szerveren és a Dart szabályokon is felteszi, és azonos választ vár; ez tartja egyben az SQL-t és a Dart másolatát. A zónák és a nyitvatartás-alapú idősávok mezőről mezőre egyeznek a demóadatokkal. Eltérést nem talált.
+
+**Ismert korlátok (demó):**
+
+- Minden +/− érintés új árazási kérést indít, nincs késleltetett összevonás; a legutolsó válasz számít. Gyors kattintásnál a szám egy pillanatra elmaradhat.
+- A rendelés még a memóriabeli tárba kerül, ezért az idősáv foglalása sem a szerveren történik; a következő lépés (rendelés és fizetés a szerveren) ezt megszünteti. A pénztár addig is a szerver árazását és idősávjait használja, ezért belépés kell hozzá.
+- A cím nincs mentve (újratöltés után újra meg kell adni); a mentett címek az MVP-ben jönnek.
+
 ## Nyitott ellenőrzések
 
 - **(h) CanvasKit forrása.** Az alapértelmezett web build a CanvasKitet a Google CDN-jéről

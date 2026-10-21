@@ -16,8 +16,9 @@ teljes vásárlási úton. Az architektúra úgy épül, hogy az MVP-be **bőví
 | b | Adatmodell, lokális backend (Supabase), seed adatok, termékfotók | kész |
 | b+ | Saját szerveres (staging) környezet: telepítő, Caddy, Cloudflare Tunnel, runbook | kész és helyben tesztelt; a Proxmoxon és a tunnelen még nem futott |
 | c | Belépés és regisztráció (Supabase Auth), demó fiók, védett útvonalak | kész |
-| d | Étlap a Supabase-ből (kategóriák, termékek, árak), betöltési és hibaállapotok | kész és tesztelt (lokális Supabase, böngészőben is); jóváhagyásra vár |
-| e–g | Kosár-árazás a szerveren, checkout + fake fizetés, rendelésállapot + mini admin | nincs |
+| d | Étlap a Supabase-ből (kategóriák, termékek, árak), betöltési és hibaállapotok | kész |
+| e | Kosár a szerver árazásával, kiszállítási zónák és idősávok a Supabase-ből, mentett kosár | kész és tesztelt (lokális Supabase, böngészőben is); jóváhagyásra vár |
+| f–g | Rendelés és fake fizetés a szerveren, rendelésállapot + mini admin | nincs |
 | h–j | Web build + deploy + APK, eszközellenőrzés, átadási csomag | nincs |
 | k | Végleges logó | nincs |
 

@@ -12,14 +12,8 @@ class InMemoryDeliveryZoneRepository implements DeliveryZoneRepository {
   final DeliveryZone fallbackZone;
 
   @override
-  Future<DeliveryZone?> zoneForPostalCode(String postalCode) async {
-    if (postalCode.length < 3) return null;
-    final prefix = postalCode.substring(0, 3);
-    for (final zone in zones) {
-      if (zone.postalPrefixes.contains(prefix)) return zone;
-    }
-    return null;
-  }
+  Future<DeliveryZone?> zoneForPostalCode(String postalCode) async =>
+      zoneServing(zones, postalCode);
 
   @override
   Future<DeliveryZone> defaultZone() async => fallbackZone;

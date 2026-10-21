@@ -55,14 +55,17 @@ void main() {
   test('isAvailable reflects the current slots', () async {
     final now = DateTime(2026, 10, 21, 8);
     final open = DeliverySlot(
+      id: 'open',
       start: DateTime(2026, 10, 21, 12),
       end: DateTime(2026, 10, 21, 13),
     );
     final tooEarly = DeliverySlot(
+      id: 'too-early',
       start: DateTime(2026, 10, 21, 8),
       end: DateTime(2026, 10, 21, 9),
     );
     final odd = DeliverySlot(
+      id: 'odd',
       start: DateTime(2026, 10, 21, 12, 30),
       end: DateTime(2026, 10, 21, 13, 30),
     );
